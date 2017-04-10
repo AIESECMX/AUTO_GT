@@ -1,0 +1,296 @@
+first_name
+email
+perfil_completo
+    {
+        "customFieldId": "zDYhe",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYhe",
+        "name": "perfil_completo",
+        "fieldType": "radio",
+        "valueType": "number",
+        "type": "number",
+        "hidden": "true",
+        "values": [
+            "0",
+            "1"
+        ]
+    },
+
+aplicante
+    {
+        "customFieldId": "zDYEt",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEt",
+        "name": "aplicante",
+        "fieldType": "radio",
+        "valueType": "string",
+        "type": "radio",
+        "hidden": "true",
+        "values": [
+            "no",
+            "yes"
+        ]
+    },
+
+
+
+http_op_engineering
+    {
+        "customFieldId": "zDYEj",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEj",
+        "name": "http_op_engineering",
+        "fieldType": "text",
+        "valueType": "url",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+
+http_op_teaching
+    {
+        "customFieldId": "zDYEN",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEN",
+        "name": "http_op_teaching",
+        "fieldType": "text",
+        "valueType": "url",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+http_op_business
+    {
+        "customFieldId": "zDYEM",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEM",
+        "name": "http_op_business",
+        "fieldType": "text",
+        "valueType": "url",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+
+http_op_marketing
+    {
+        "customFieldId": "zDYEP",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEP",
+        "name": "http_op_marketing",
+        "fieldType": "text",
+        "valueType": "url",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+http_op_it
+    {
+        "customFieldId": "zDYEs",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEs",
+        "name": "http_op_it",
+        "fieldType": "text",
+        "valueType": "url",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+titulo_engineering
+    {
+        "customFieldId": "zDYE8",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYE8",
+        "name": "titulo_engineering",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+titulo_teaching
+    {
+        "customFieldId": "zDYEI",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEI",
+        "name": "titulo_teaching",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+titulo_business
+    {
+        "customFieldId": "zDYEL",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEL",
+        "name": "titulo_business",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+titulo_marketing
+    {
+        "customFieldId": "zDYEo",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEo",
+        "name": "titulo_marketing",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+titulo_it
+    {
+        "customFieldId": "zDYEa",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEa",
+        "name": "titulo_it",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+descripcion_engineering
+    {
+        "customFieldId": "zDYEG",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEG",
+        "name": "descripcion_engineering",
+        "fieldType": "textarea",
+        "valueType": "string",
+        "type": "textarea",
+        "hidden": "true",
+        "values": []
+    },
+
+
+descripcion_teaching
+    {
+        "customFieldId": "zDYE4",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYE4",
+        "name": "descripcion_teaching",
+        "fieldType": "textarea",
+        "valueType": "string",
+        "type": "textarea",
+        "hidden": "true",
+        "values": []
+    },
+
+
+descripcion_business
+    {
+        "customFieldId": "zDYE2",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYE2",
+        "name": "descripcion_business",
+        "fieldType": "textarea",
+        "valueType": "string",
+        "type": "textarea",
+        "hidden": "true",
+        "values": []
+    },
+
+
+descripcion_marketing
+    {
+        "customFieldId": "zDYEV",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYEV",
+        "name": "descripcion_marketing",
+        "fieldType": "textarea",
+        "valueType": "string",
+        "type": "textarea",
+        "hidden": "true",
+        "values": []
+    },
+
+
+descripcion_it
+    {
+        "customFieldId": "zDYE0",
+        "href": "https://aiesec.getresponse360.com/v3/custom-fields/zDYE0",
+        "name": "descripcion_it",
+        "fieldType": "textarea",
+        "valueType": "string",
+        "type": "textarea",
+        "hidden": "true",
+        "values": []
+    },
+
+
+
+opp_country_engineering
+    {
+        "customFieldId": "zDY1L",
+        "href": "https://api3.getresponse360.com/v3/custom-fields/zDY1L",
+        "name": "opp_country_engineering",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+opp_country_teaching
+    {
+        "customFieldId": "zDY1a",
+        "href": "https://api3.getresponse360.com/v3/custom-fields/zDY1a",
+        "name": "opp_country_teaching",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+
+opp_country_business
+    {
+        "customFieldId": "zDY1o",
+        "href": "https://api3.getresponse360.com/v3/custom-fields/zDY1o",
+        "name": "opp_country_business",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+
+opp_country_marketing
+    {
+        "customFieldId": "zDY1I",
+        "href": "https://api3.getresponse360.com/v3/custom-fields/zDY1I",
+        "name": "opp_country_marketing",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
+opp_country_it
+    {
+        "customFieldId": "zDY18",
+        "href": "https://api3.getresponse360.com/v3/custom-fields/zDY18",
+        "name": "opp_country_it",
+        "fieldType": "text",
+        "valueType": "string",
+        "type": "text",
+        "hidden": "true",
+        "values": []
+    },
+
