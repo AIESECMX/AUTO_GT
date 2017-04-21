@@ -16,6 +16,13 @@ TEACHING = 1002
 ENG = 1003
 BA = 1004
 MKT = 1005
+
+
+#GE countries 
+COLOMBIA=1551
+COSTARICA=577
+ARGENTINA=1535
+PERU = 1553
 #practicas_contacto_inicial ID:47181114, TOKEN:S1vv8
 ogt_gr_campaign_id = 'S1vv8'
 #emprendedor_contacto_inicial ID:50425903, TOKEN:SbOxC

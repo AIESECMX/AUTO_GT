@@ -40,27 +40,27 @@ def notify_new_opps(expa_token):
 	#IT
 	
 	#get_opps(expa_token,[224])
-	it = get_opps(expa_token,programs['IT'])
+	peru = get_opps(expa_token,config.PERU)
 	#Teaching
-	teach = get_opps(expa_token,programs['Teaching'])
+	colombia = get_opps(expa_token,config.COLOMBIA)
 	#Engineering
-	eng = get_opps(expa_token,programs['Engineering'])
+	argentina = get_opps(expa_token,config.ARGENTINA)
 	#Marketing
-	mkt = get_opps(expa_token,programs['Marketing'])
+	costarica = get_opps(expa_token,config.COSTARICA)
 	#Business Administration
-	ba = get_opps(expa_token,programs['Business Administration'])
-	get_eps_gr_1(it_op=it,teaching_op=teach,mkt_op=mkt,eng_op=eng,ba_op=ba)
+	brasil = get_opps(expa_token,config.Brasil)
+	get_eps_gr_1(peru_op=peru,colombia_op=colombia,argentina_op=argentina,costarica_op=costarica,brasil_op=brasil)
 	
 #this gets opportunities form te last week form expa using the yop token
-def get_opps(aiesec_token,backgrounds):
+def get_opps(aiesec_token,country = config.PERU):
 	headersx={'access_token': aiesec_token}
 	url = "https://gis-api.aiesec.org/v2/opportunities.json"
 	yesterday = datetime.date.today()-datetime.timedelta(6)
 	params = {
 	"access_token" :aiesec_token,
-	'filters[programmes][]':[2],
-	'filters[backgrounds][][id]':backgrounds,
-	"filters[home_mcs][]":[1621,1606 ,1613,1549,1554],
+	'filters[programmes][]':[5],#GE
+	"filters[home_mcs][]":[country],
+	"per_page":2,
 	#"filters[work_fields][]":[724,742],
 	"filters[created][to]" : datetime.date.today().strftime('%y-%m-%d'),
 	"sort":"filters[created][to]"
@@ -68,14 +68,12 @@ def get_opps(aiesec_token,backgrounds):
 	q = requests.get(url, params=params)
 	
 	ops_expa= json.loads(q.text)['data']
-	
 	return ops_expa[0]['id']
 	
 
 
 #this method gets eps from get reponse to match them with the opps and then update their profiles
-def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
-	
+def get_eps_gr_1(peru_op,colombia_op,argentina_op,costarica_op,brasil_op):
 	eps = None
 	#dates form today and 3 months ago
 	day = 3
@@ -84,7 +82,7 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 		created  = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
-		'query[campaignId]':'S1vv8',
+		'query[campaignId]':config.oge_gr_campaign_id,
 		'createdOn[from]':created.strftime('%y-%m-%d'),
 		'createdOn[to]':created.strftime('%y-%m-%d'),
 		'fields':''
@@ -111,70 +109,57 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 			if 'aplicante' in custom_fields:
 				if custom_fields['aplicante'] != 'yes' :
 					#send the new opportunities to getresponse
-					send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
+					send_opps(gr_id = ep['contactId'],peru=peru_op,colombia=colombia_op,argentina=argentina_op,costarica=costarica_op,brasil=brasil_op)
 			elif not is_applicant(custom_fields['expa_id'],ep['contactId']):
-				send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
+				send_opps(gr_id = ep['contactId'],peru=peru_op,colombia=colombia_op,argentina=argentina_op,costarica=costarica_op,brasil=brasil_op)
+				
 		#
 		
 #
-def send_opps(gr_id ,it  , teaching , mkt,eng ,ba ):
+def send_opps(gr_id , peru , colombia , argentina , costarica , brasil):
 	#get full ifor for the opps
 	url = 'https://gis-api.aiesec.org/v2/opportunities/'
-	it_op = json.loads(requests.get(url+str(it)+'.json?access_token='+expa_token).text)
-	teach_op = json.loads(requests.get(url+str(teaching)+'.json?access_token='+expa_token).text)
-	mkt_op = json.loads(requests.get(url+str(mkt)+'.json?access_token='+expa_token).text)
-	eng_op = json.loads(requests.get(url+str(eng)+'.json?access_token='+expa_token).text)
-	ba_op = json.loads(requests.get(url+str(ba)+'.json?access_token='+expa_token).text)
-	it_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(it_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	teach_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(teach_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	mkt_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(mkt_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	eng_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(eng_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	ba_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(ba_op['home_lc']['id'])+'.json?access_token='+expa_token).text) ['parent']['name']
-	#print eng_op
+	peru_op = json.loads(requests.get(url+str(peru)+'.json?access_token='+expa_token).text)
+	colombia_op = json.loads(requests.get(url+str(colombia)+'.json?access_token='+expa_token).text)
+	argentina_op = json.loads(requests.get(url+str(argentina)+'.json?access_token='+expa_token).text)
+	costarica_op = json.loads(requests.get(url+str(costarica)+'.json?access_token='+expa_token).text)
+	brasil_op = json.loads(requests.get(url+str(brasil)+'.json?access_token='+expa_token).text)
+	#print costarica_op
 	params = {
     "customFieldValues": [
-        	#http_op_engineering
-        	{"customFieldId": 'zDYEj',"value": ['https://opportunities.aiesec.org/opportunity/'+str(eng)]},
+        	#http_op_costaricaineering
+        	{"customFieldId": 'zDY7G',"value": ['https://opportunities.aiesec.org/opportunity/'+str(costarica)]},
         	#http_op_teahcing
-        	{"customFieldId": 'zDYEN',"value": ['https://opportunities.aiesec.org/opportunity/'+str(teaching)]},
+        	{"customFieldId": 'zDY7L',"value": ['https://opportunities.aiesec.org/opportunity/'+str(colombia)]},
         	#http_op_ussines
-        	{"customFieldId": 'zDYEM',"value": ['https://opportunities.aiesec.org/opportunity/'+str(ba)]},
-        	#http_op_mkt
-        	{"customFieldId": 'zDYEP',"value": ['https://opportunities.aiesec.org/opportunity/'+str(mkt)]},
+        	{"customFieldId": 'zDY7o',"value": ['https://opportunities.aiesec.org/opportunity/'+str(brasil)]},
+        	#http_op_argentina
+        	{"customFieldId": 'zDY74',"value": ['https://opportunities.aiesec.org/opportunity/'+str(argentina)]},
         	#http_op_it
-        	{"customFieldId": 'zDYEs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(it)]},
-        	#titulo eng
-        	{"customFieldId": 'zDYE8',"value": [eng_op['title']]},
-        	#titulo teach
-        	{"customFieldId": 'zDYEI',"value": [teach_op['title']]},
-        	#titulo ba
-        	{"customFieldId": 'zDYEL',"value": [ba_op['title']]},
-        	#titulo mkt
-        	{"customFieldId": 'zDYEo',"value": [mkt_op['title']]},
-        	#titulo it
-        	{"customFieldId": 'zDYEa',"value": [it_op['title']]},
-        	#desc eng
-        	{"customFieldId": 'zDYEG',"value": [eng_op['description'][:250]]},
-        	#description teach
-        	{"customFieldId": 'zDYE4',"value": [teach_op['description'][:250]]},
-        	#description ba
-        	{"customFieldId": 'zDYE2',"value": [ba_op['description'][:250]]},
-        	#description mkt
-        	{"customFieldId": 'zDYEV',"value": [mkt_op['description'][:250]]},
+        	{"customFieldId": 'zDY72',"value": ['https://opportunities.aiesec.org/opportunity/'+str(peru)]},
+        	#titulo costarica
+        	{"customFieldId": 'zDY7q',"value": [costarica_op['title']]},
+        	#titulo colombia
+        	{"customFieldId": 'zDY7V',"value": [colombia_op['title']]},
+        	#titulo brasil
+        	{"customFieldId": 'zDY70',"value": [brasil_op['title']]},
+        	#titulo argentina
+        	{"customFieldId": 'zDY7X',"value": [argentina_op['title']]},
+        	#titulo peru
+        	{"customFieldId": 'zDY7m',"value": [peru_op['title']]},
+        	#desc costarica
+        	{"customFieldId": 'zDY7v',"value": [costarica_op['description'][:250]]},
+        	#description colombia
+        	{"customFieldId": 'zDY7B',"value": [colombia_op['description'][:250]]},
+        	#description brasil
+        	{"customFieldId": 'zDY7k',"value": [brasil_op['description'][:250]]},
+        	#description argentina
+        	{"customFieldId": 'zDY7i',"value": [argentina_op['description'][:250]]},
         	#description it
-        	{"customFieldId": 'zDYE0',"value": [it_op['description'][:250]]},
-        	#country eng
-        	{"customFieldId": 'zDY1L',"value": [eng_country]},
-        	#coutry teach
-        	{"customFieldId": 'zDY1a',"value": [teach_country]},
-        	#country ba
-        	{"customFieldId": 'zDY1o',"value": [ba_country]},
-        	#country mkt
-        	{"customFieldId": 'zDY1I',"value": [mkt_country]},
-        	#country it
-        	{"customFieldId": 'zDY18',"value": [it_country]}
+        	{"customFieldId": 'zDY73',"value": [peru_op['description'][:250]]}
  	   	]
 	}
+	#print params
 	test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
 	#print 'aqui se hicieron las madre estas de las practicas par auna usarios'	
 	#print params

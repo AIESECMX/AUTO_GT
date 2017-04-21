@@ -1,5 +1,5 @@
-#this mprogram is an miplementation that will look in the opportunitities for GT that were
-#open in the last week and will consult the list of active gt eps in GetRepose for GT
+#this mprogram is an miplementation that will look in the opportunitities for GV that were
+#open in the last week and will consult the list of active gt eps in GetRepose for GV
 
 import requests
 import config
@@ -58,8 +58,8 @@ def get_opps(aiesec_token,backgrounds):
 	yesterday = datetime.date.today()-datetime.timedelta(6)
 	params = {
 	"access_token" :aiesec_token,
-	'filters[programmes][]':[2],
-	'filters[backgrounds][][id]':backgrounds,
+	'filters[programmes][]':[1],#gv
+	#'filters[backgrounds][][id]':backgrounds,
 	"filters[home_mcs][]":[1621,1606 ,1613,1549,1554],
 	#"filters[work_fields][]":[724,742],
 	"filters[created][to]" : datetime.date.today().strftime('%y-%m-%d'),
@@ -74,7 +74,7 @@ def get_opps(aiesec_token,backgrounds):
 
 
 #this method gets eps from get reponse to match them with the opps and then update their profiles
-def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
+def get_eps_gr(it_op,teaching_op,mkt_op,eng_op,ba_op):
 	
 	eps = None
 	#dates form today and 3 months ago
@@ -84,10 +84,10 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 		created  = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
-		'query[campaignId]':'S1vv8',
-		'createdOn[from]':created.strftime('%y-%m-%d'),
-		'createdOn[to]':created.strftime('%y-%m-%d'),
-		'fields':''
+		'query[campaignId]' : config.ogv_gr_campaign_id,
+		'createdOn[from]' : created.strftime('%y-%m-%d'),
+		'createdOn[to]' : created.strftime('%y-%m-%d'),
+		'fields' : ''
 		}
 		query = 'contacts'
 		
@@ -111,7 +111,7 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 			if 'aplicante' in custom_fields:
 				if custom_fields['aplicante'] != 'yes' :
 					#send the new opportunities to getresponse
-					send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
+					#send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
 			elif not is_applicant(custom_fields['expa_id'],ep['contactId']):
 				send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
 		#
@@ -220,7 +220,6 @@ def is_applicant(expa_id,gr_id):
 		test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
 		print 'lo de si ya es palicante'
 		
-
 		return True
 	return False
 
