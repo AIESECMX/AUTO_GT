@@ -83,8 +83,8 @@ def get_eps_gr_1(peru_op,colombia_op,argentina_op,costarica_op,brasil_op):
 		day += 7
 		params = {
 		'query[campaignId]':config.oge_gr_campaign_id,
-		'createdOn[from]':created.strftime('%y-%m-%d'),
-		'createdOn[to]':created.strftime('%y-%m-%d'),
+		'query[createdOn][from]':created.strftime('%y-%m-%d'),
+		'query[createdOn][to]':created.strftime('%y-%m-%d'),
 		'fields':''
 		}
 		query = 'contacts'

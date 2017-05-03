@@ -85,8 +85,8 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 		day += 7
 		params = {
 		'query[campaignId]':'S1vv8',
-		'createdOn[from]':created.strftime('%y-%m-%d'),
-		'createdOn[to]':created.strftime('%y-%m-%d'),
+		'query[createdOn][from]':created.strftime('%y-%m-%d'),
+		'query[createdOn][to]':created.strftime('%y-%m-%d'),
 		'fields':''
 		}
 		query = 'contacts'

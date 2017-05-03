@@ -15,7 +15,8 @@ class GetResponse(object):
 
 	#gets a url commando and returns the response as a string
 	def get_request(self, url, params = None):
-		q = requests.get(self.url+'/'+url, headers=self.headers,params= params)
+		q = requests.get(self.url+'/'+url, headers=self.headers,data = params,params= params)
+		
 		return q.content
 
 	#thi makes a post request to GR, it gets as parameters the url for the action and the data as a json object
