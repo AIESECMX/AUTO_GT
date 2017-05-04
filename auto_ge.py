@@ -62,7 +62,7 @@ def get_opps(aiesec_token,country = config.PERU):
 	"filters[home_mcs][]":[country],
 	"per_page":2,
 	#"filters[work_fields][]":[724,742],
-	"filters[created][to]" : datetime.date.today().strftime('%y-%m-%d'),
+	"filters[created][to]" : datetime.date.today().strftime('%Y-%m-%d'),
 	"sort":"filters[created][to]"
 	}
 	q = requests.get(url, params=params)
@@ -83,8 +83,8 @@ def get_eps_gr_1(peru_op,colombia_op,argentina_op,costarica_op,brasil_op):
 		day += 7
 		params = {
 		'query[campaignId]':config.oge_gr_campaign_id,
-		'query[createdOn][from]':created.strftime('%y-%m-%d'),
-		'query[createdOn][to]':created.strftime('%y-%m-%d'),
+		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
+		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
 		}
 		query = 'contacts'

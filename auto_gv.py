@@ -37,45 +37,42 @@ def notify_new_opps(expa_token):
 	#map one opp per porgram 
 	backgrounds = open('backgrounds.json','r')
 	programs = json.loads(backgrounds.read())['data']
-	#IT
 	
-	#get_opps(expa_token,[224])
-	it = get_opps(expa_token,programs['IT'])
-	#Teaching
-	teach = get_opps(expa_token,programs['Teaching'])
-	#Engineering
-	eng = get_opps(expa_token,programs['Engineering'])
-	#Marketing
-	mkt = get_opps(expa_token,programs['Marketing'])
-	#Business Administration
-	ba = get_opps(expa_token,programs['Business Administration'])
-	get_eps_gr_1(it_op=it,teaching_op=teach,mkt_op=mkt,eng_op=eng,ba_op=ba)
+	
+	education = get_opps(expa_token,config.sdgs["education"])
+	gender_eq = get_opps(expa_token,config.sdgs["gender_eq"])
+	decent_work = get_opps(expa_token,config.sdgs["decent_work"])
+	inequalities = get_opps(expa_token,config.sdgs["inequalities"])
+	climate = get_opps(expa_token,config.sdgs["climate"])
+	partnerships = get_opps(expa_token,config.sdgs["partnerships"])
+
+	get_eps_gr_1(education=education,gender_eq=gender_eq,decent_work=decent_work,inequalities=inequalities,
+		climate=climate,partnerships= partnerships)
 	
 #this gets opportunities form te last week form expa using the yop token
-def get_opps(aiesec_token,backgrounds):
+def get_opps(aiesec_token, sdg):
 	headersx={'access_token': aiesec_token}
 	url = "https://gis-api.aiesec.org/v2/opportunities.json"
 	yesterday = datetime.date.today()-datetime.timedelta(6)
 	params = {
 	"access_token" :aiesec_token,
 	'filters[programmes][]':[1],#gv
-	#'filters[backgrounds][][id]':backgrounds,
-	"filters[home_mcs][]":[1621,1606 ,1613,1549,1554],
+	'filters[sdg_goals][]':[sdg],
+	"filters[home_mcs][]":config.gv_countries,
 	#"filters[work_fields][]":[724,742],
-	"filters[created][to]" : datetime.date.today().strftime('%y-%m-%d'),
+	"filters[created][to]" : datetime.date.today().strftime('%Y-%m-%d'),
 	"sort":"filters[created][to]"
 	}
 	q = requests.get(url, params=params)
 	
 	ops_expa= json.loads(q.text)['data']
-	
+
 	return ops_expa[0]['id']
 	
 
 
 #this method gets eps from get reponse to match them with the opps and then update their profiles
-def get_eps_gr(it_op,teaching_op,mkt_op,eng_op,ba_op):
-	
+def get_eps_gr_1(education,gender_eq,decent_work,inequalities,climate,partnerships):
 	eps = None
 	#dates form today and 3 months ago
 	day = 3
@@ -85,18 +82,19 @@ def get_eps_gr(it_op,teaching_op,mkt_op,eng_op,ba_op):
 		day += 7
 		params = {
 		'query[campaignId]' : config.ogv_gr_campaign_id,
-		'query[createdOn][from]' : created.strftime('%y-%m-%d'),
-		'query[createdOn][to]' : created.strftime('%y-%m-%d'),
+		'query[createdOn][from]' : created.strftime('%Y-%m-%d'),
+		'query[createdOn][to]' : created.strftime('%Y-%m-%d'),
 		'fields' : ''
 		}
 		query = 'contacts'
 		
 		contacts  = gr.get_request(query,params = params)
+		print contacts
 		l = json.loads(contacts)
 		non_applicants = []
 		for ep in l :
 			#print 'imprimiendo usarios de algo '
-			#print ep
+			print ep
 			ep_aux =  json.loads(gr.get_request(query+'/'+ep['contactId']))
 			custom_fields = {}
 			for cf in  ep_aux['customFieldValues']:
@@ -110,69 +108,81 @@ def get_eps_gr(it_op,teaching_op,mkt_op,eng_op,ba_op):
 			#check if the ep is an apllicant in gr and check if the ep is applicant in expa
 			if 'aplicante' in custom_fields:
 				if custom_fields['aplicante'] != 'yes' :
+					send_opps(gr_id = ep['contactId'],education= education,gender_eq=gender_eq,decent_work=decent_work,
+					inequalities=inequalities,climate=climate,partnerships=partnerships)
 					#send the new opportunities to getresponse
-					#send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
 			elif not is_applicant(custom_fields['expa_id'],ep['contactId']):
-				send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
+				send_opps(gr_id = ep['contactId'],education= education,gender_eq=gender_eq,decent_work=decent_work,
+					inequalities=inequalities,climate=climate,partnerships=partnerships)
 		#
 		
 #
-def send_opps(gr_id ,it  , teaching , mkt,eng ,ba ):
+def send_opps(gr_id,education,gender_eq,decent_work,inequalities,climate,partnerships):
 	#get full ifor for the opps
 	url = 'https://gis-api.aiesec.org/v2/opportunities/'
-	it_op = json.loads(requests.get(url+str(it)+'.json?access_token='+expa_token).text)
-	teach_op = json.loads(requests.get(url+str(teaching)+'.json?access_token='+expa_token).text)
-	mkt_op = json.loads(requests.get(url+str(mkt)+'.json?access_token='+expa_token).text)
-	eng_op = json.loads(requests.get(url+str(eng)+'.json?access_token='+expa_token).text)
-	ba_op = json.loads(requests.get(url+str(ba)+'.json?access_token='+expa_token).text)
-	it_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(it_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	teach_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(teach_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	mkt_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(mkt_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	eng_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(eng_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	ba_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(ba_op['home_lc']['id'])+'.json?access_token='+expa_token).text) ['parent']['name']
-	#print eng_op
+	partnerships_op = json.loads(requests.get(url+str(partnerships)+'.json?access_token='+expa_token).text)
+	education_op = json.loads(requests.get(url+str(education)+'.json?access_token='+expa_token).text)
+	gender_eq_op = json.loads(requests.get(url+str(gender_eq)+'.json?access_token='+expa_token).text)
+	decent_work_op = json.loads(requests.get(url+str(decent_work)+'.json?access_token='+expa_token).text)
+	inequalities_op = json.loads(requests.get(url+str(inequalities)+'.json?access_token='+expa_token).text)
+	climate_op = json.loads(requests.get(url+str(climate)+'.json?access_token='+expa_token).text)
+	partnerships_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(partnerships_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	education_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(education_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	gender_eq_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(gender_eq_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	decent_work_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(decent_work_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	inequalities_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(inequalities_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	climate_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(climate_op['home_lc']['id'])+'.json?access_token='+expa_token).text) ['parent']['name']
+	#print inequalities_op
 	params = {
     "customFieldValues": [
-        	#http_op_engineering
-        	{"customFieldId": 'zDYEj',"value": ['https://opportunities.aiesec.org/opportunity/'+str(eng)]},
+    		#http_op_partnership
+        	{"customFieldId": 'zDYzA',"value": ['https://opportunities.aiesec.org/opportunity/'+str(partnerships)]},
+        	#http_op_inequalitiesineering
+        	{"customFieldId": 'zDYzc',"value": ['https://opportunities.aiesec.org/opportunity/'+str(inequalities)]},
         	#http_op_teahcing
-        	{"customFieldId": 'zDYEN',"value": ['https://opportunities.aiesec.org/opportunity/'+str(teaching)]},
+        	{"customFieldId": 'zDYzC',"value": ['https://opportunities.aiesec.org/opportunity/'+str(gender_eq)]},
         	#http_op_ussines
-        	{"customFieldId": 'zDYEM',"value": ['https://opportunities.aiesec.org/opportunity/'+str(ba)]},
-        	#http_op_mkt
-        	{"customFieldId": 'zDYEP',"value": ['https://opportunities.aiesec.org/opportunity/'+str(mkt)]},
-        	#http_op_it
-        	{"customFieldId": 'zDYEs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(it)]},
-        	#titulo eng
-        	{"customFieldId": 'zDYE8',"value": [eng_op['title']]},
-        	#titulo teach
-        	{"customFieldId": 'zDYEI',"value": [teach_op['title']]},
-        	#titulo ba
-        	{"customFieldId": 'zDYEL',"value": [ba_op['title']]},
-        	#titulo mkt
-        	{"customFieldId": 'zDYEo',"value": [mkt_op['title']]},
-        	#titulo it
-        	{"customFieldId": 'zDYEa',"value": [it_op['title']]},
-        	#desc eng
-        	{"customFieldId": 'zDYEG',"value": [eng_op['description'][:250]]},
-        	#description teach
-        	{"customFieldId": 'zDYE4',"value": [teach_op['description'][:250]]},
-        	#description ba
-        	{"customFieldId": 'zDYE2',"value": [ba_op['description'][:250]]},
-        	#description mkt
-        	{"customFieldId": 'zDYEV',"value": [mkt_op['description'][:250]]},
-        	#description it
-        	{"customFieldId": 'zDYE0',"value": [it_op['description'][:250]]},
-        	#country eng
-        	{"customFieldId": 'zDY1L',"value": [eng_country]},
-        	#coutry teach
-        	{"customFieldId": 'zDY1a',"value": [teach_country]},
-        	#country ba
-        	{"customFieldId": 'zDY1o',"value": [ba_country]},
-        	#country mkt
-        	{"customFieldId": 'zDY1I',"value": [mkt_country]},
-        	#country it
-        	{"customFieldId": 'zDY18',"value": [it_country]}
+        	{"customFieldId": 'zDYzx',"value": ['https://opportunities.aiesec.org/opportunity/'+str(climate)]},
+        	#http_op_decent_work
+        	{"customFieldId": 'zDYzS',"value": ['https://opportunities.aiesec.org/opportunity/'+str(decent_work)]},
+        	#http_op_education
+        	{"customFieldId": 'zDYEs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(education)]},
+        	#titulo partnerships
+        	{"customFieldId": 'zDYz7',"value": [partnerships_op['title']]},
+        	#titulo inequalities
+        	{"customFieldId": 'zDYzE',"value": [inequalities_op['title']]},
+        	#titulo gender_eq
+        	{"customFieldId": 'zDYzr',"value": [gender_eq_op['title']]},
+        	#titulo climate
+        	{"customFieldId": 'zDYz1',"value": [climate_op['title']]},
+        	#titulo decent_work
+        	{"customFieldId": 'zDYzh',"value": [decent_work_op['title']]},
+        	#titulo education
+        	{"customFieldId": 'zDYzK',"value": [education_op['title']]},
+        	#desc partnerships
+        	{"customFieldId": 'zDYzn',"value": [partnerships_op['description'][:250]]},
+        	#desc inequalities
+        	{"customFieldId": 'zDYzR',"value": [inequalities_op['description'][:250]]},
+        	#description gender_eq
+        	{"customFieldId": 'zDYzT',"value": [gender_eq_op['description'][:250]]},
+        	#description climate
+        	{"customFieldId": 'zDYzd',"value": [climate_op['description'][:250]]},
+        	#description decent_work
+        	{"customFieldId": 'zDYzp',"value": [decent_work_op['description'][:250]]},
+        	#description education
+        	{"customFieldId": 'zDYzz',"value": [education_op['description'][:250]]},
+        	#country partnerships
+        	{"customFieldId": 'zDYzb',"value": [partnerships_country]},
+        	#country inequalities
+        	{"customFieldId": 'zDYzy',"value": [inequalities_country]},
+        	#coutry gender_eq
+        	{"customFieldId": 'zDYz5',"value": [gender_eq_country]},
+        	#country climate
+        	{"customFieldId": 'zDYzf',"value": [climate_country]},
+        	#country decent_work
+        	{"customFieldId": 'zDYzw',"value": [decent_work_country]},
+        	#country education
+        	{"customFieldId": 'zDYzJ',"value": [education_country]}
  	   	]
 	}
 	test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
@@ -228,6 +238,7 @@ def is_applicant(expa_id,gr_id):
 def main():
 	#this methos starts the full excecution of autogt
 	notify_new_opps(yop_token)
+	#get_opps(yop_token,1104)
 	#print  gr.get_request('custom-fields')
 	
 

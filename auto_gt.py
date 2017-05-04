@@ -62,7 +62,7 @@ def get_opps(aiesec_token,backgrounds):
 	'filters[backgrounds][][id]':backgrounds,
 	"filters[home_mcs][]":[1621,1606 ,1613,1549,1554],
 	#"filters[work_fields][]":[724,742],
-	"filters[created][to]" : datetime.date.today().strftime('%y-%m-%d'),
+	"filters[created][to]" : datetime.date.today().strftime('%Y-%m-%d'),
 	"sort":"filters[created][to]"
 	}
 	q = requests.get(url, params=params)
@@ -86,7 +86,7 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 		params = {
 		'query[campaignId]':'S1vv8',
 		'query[createdOn][from]':created.strftime('%y-%m-%d'),
-		'query[createdOn][to]':created.strftime('%y-%m-%d'),
+		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
 		}
 		query = 'contacts'
