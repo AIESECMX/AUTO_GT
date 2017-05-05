@@ -37,19 +37,42 @@ def notify_new_opps(expa_token):
 	#map one opp per porgram 
 	backgrounds = open('backgrounds.json','r')
 	programs = json.loads(backgrounds.read())['data']
-	#IT
 	
-	#get_opps(expa_token,[224])
+	opps = {}
+	countries = {} 
+
+	#getting the opps ids
 	it = get_opps(expa_token,programs['IT'])
-	#Teaching
 	teach = get_opps(expa_token,programs['Teaching'])
-	#Engineering
 	eng = get_opps(expa_token,programs['Engineering'])
-	#Marketing
 	mkt = get_opps(expa_token,programs['Marketing'])
-	#Business Administration
 	ba = get_opps(expa_token,programs['Business Administration'])
-	get_eps_gr_1(it_op=it,teaching_op=teach,mkt_op=mkt,eng_op=eng,ba_op=ba)
+
+	url = 'https://gis-api.aiesec.org/v2/opportunities/'
+
+
+	#getting the opportunites itself
+	it_op = json.loads(requests.get(url+str(it)+'.json?access_token='+expa_token).text)
+	teach_op = json.loads(requests.get(url+str(teach)+'.json?access_token='+expa_token).text)
+	mkt_op = json.loads(requests.get(url+str(mkt)+'.json?access_token='+expa_token).text)
+	eng_op = json.loads(requests.get(url+str(eng)+'.json?access_token='+expa_token).text)
+	ba_op = json.loads(requests.get(url+str(ba)+'.json?access_token='+expa_token).text)
+
+	opps['it_op'] = it_op
+	opps['teach_op'] = teach_op
+	opps['mkt_op'] = mkt_op
+	opps['eng_op'] = eng_op
+	opps['ba_op'] = ba_op
+
+
+	#getting the countries 
+	countries['it_country'] = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(it_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	countries['teach_country'] = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(teach_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	countries['mkt_country'] = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(mkt_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	countries['eng_country'] = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(eng_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+	countries['ba_country'] = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(ba_op['home_lc']['id'])+'.json?access_token='+expa_token).text) ['parent']['name']
+
+	get_eps_gr_1(opps =  opps, countries = countries)
 	
 #this gets opportunities form te last week form expa using the yop token
 def get_opps(aiesec_token,backgrounds):
@@ -66,7 +89,7 @@ def get_opps(aiesec_token,backgrounds):
 	"sort":"filters[created][to]"
 	}
 	q = requests.get(url, params=params)
-	
+	#print q.status_code
 	ops_expa= json.loads(q.text)['data']
 	
 	return ops_expa[0]['id']
@@ -74,7 +97,7 @@ def get_opps(aiesec_token,backgrounds):
 
 
 #this method gets eps from get reponse to match them with the opps and then update their profiles
-def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
+def get_eps_gr_1(opps, countries ):
 	
 	eps = None
 	#dates form today and 3 months ago
@@ -85,13 +108,14 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 		day += 7
 		params = {
 		'query[campaignId]':'S1vv8',
-		'query[createdOn][from]':created.strftime('%y-%m-%d'),
+		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
 		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
 		}
 		query = 'contacts'
 		
 		contacts  = gr.get_request(query,params = params)
+
 		l = json.loads(contacts)
 		non_applicants = []
 		for ep in l :
@@ -111,38 +135,35 @@ def get_eps_gr_1(it_op,teaching_op,mkt_op,eng_op,ba_op):
 			if 'aplicante' in custom_fields:
 				if custom_fields['aplicante'] != 'yes' :
 					#send the new opportunities to getresponse
-					send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
+					send_opps(gr_id = ep['contactId'],opps =  opps, countries = countries)
 			elif not is_applicant(custom_fields['expa_id'],ep['contactId']):
-				send_opps(gr_id = ep['contactId'],it  = it_op, teaching = teaching_op, mkt= mkt_op,eng = eng_op,ba = ba_op)
+				send_opps(gr_id = ep['contactId'],opps =  opps, countries = countries)
 		#
 		
 #
-def send_opps(gr_id ,it  , teaching , mkt,eng ,ba ):
+def send_opps(gr_id ,opps , countries ):
 	#get full ifor for the opps
-	url = 'https://gis-api.aiesec.org/v2/opportunities/'
-	it_op = json.loads(requests.get(url+str(it)+'.json?access_token='+expa_token).text)
-	teach_op = json.loads(requests.get(url+str(teaching)+'.json?access_token='+expa_token).text)
-	mkt_op = json.loads(requests.get(url+str(mkt)+'.json?access_token='+expa_token).text)
-	eng_op = json.loads(requests.get(url+str(eng)+'.json?access_token='+expa_token).text)
-	ba_op = json.loads(requests.get(url+str(ba)+'.json?access_token='+expa_token).text)
-	it_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(it_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	teach_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(teach_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	mkt_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(mkt_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	eng_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(eng_op['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-	ba_country = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(ba_op['home_lc']['id'])+'.json?access_token='+expa_token).text) ['parent']['name']
+
+	it_op = opps['it_op'] 
+	teach_op = opps['teach_op'] 
+	mkt_op = opps['mkt_op'] 
+	eng_op = opps['eng_op'] 
+	ba_op = opps['ba_op'] 
+
+
 	#print eng_op
 	params = {
     "customFieldValues": [
         	#http_op_engineering
-        	{"customFieldId": 'zDYEj',"value": ['https://opportunities.aiesec.org/opportunity/'+str(eng)]},
+        	{"customFieldId": 'zDYEj',"value": ['https://opportunities.aiesec.org/opportunity/'+str(eng_op['id'])]},
         	#http_op_teahcing
-        	{"customFieldId": 'zDYEN',"value": ['https://opportunities.aiesec.org/opportunity/'+str(teaching)]},
+        	{"customFieldId": 'zDYEN',"value": ['https://opportunities.aiesec.org/opportunity/'+str(teach_op['id'])]},
         	#http_op_ussines
-        	{"customFieldId": 'zDYEM',"value": ['https://opportunities.aiesec.org/opportunity/'+str(ba)]},
+        	{"customFieldId": 'zDYEM',"value": ['https://opportunities.aiesec.org/opportunity/'+str(ba_op['id'])]},
         	#http_op_mkt
-        	{"customFieldId": 'zDYEP',"value": ['https://opportunities.aiesec.org/opportunity/'+str(mkt)]},
+        	{"customFieldId": 'zDYEP',"value": ['https://opportunities.aiesec.org/opportunity/'+str(mkt_op['id'])]},
         	#http_op_it
-        	{"customFieldId": 'zDYEs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(it)]},
+        	{"customFieldId": 'zDYEs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(it_op['id'])]},
         	#titulo eng
         	{"customFieldId": 'zDYE8',"value": [eng_op['title']]},
         	#titulo teach
@@ -164,15 +185,15 @@ def send_opps(gr_id ,it  , teaching , mkt,eng ,ba ):
         	#description it
         	{"customFieldId": 'zDYE0',"value": [it_op['description'][:250]]},
         	#country eng
-        	{"customFieldId": 'zDY1L',"value": [eng_country]},
+        	{"customFieldId": 'zDY1L',"value": [countries['eng_country']]},
         	#coutry teach
-        	{"customFieldId": 'zDY1a',"value": [teach_country]},
+        	{"customFieldId": 'zDY1a',"value": [countries['teach_country']]},
         	#country ba
-        	{"customFieldId": 'zDY1o',"value": [ba_country]},
+        	{"customFieldId": 'zDY1o',"value": [countries['ba_country']]},
         	#country mkt
-        	{"customFieldId": 'zDY1I',"value": [mkt_country]},
+        	{"customFieldId": 'zDY1I',"value": [countries['mkt_country']]},
         	#country it
-        	{"customFieldId": 'zDY18',"value": [it_country]}
+        	{"customFieldId": 'zDY18',"value": [countries['it_country']]}
  	   	]
 	}
 	test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
@@ -197,7 +218,7 @@ def is_profile_complete(expa_id,gr_id,):
 	 	   	]
 		}
 		test  = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-		print 'lo del perfil completo'
+		print 'perfil completo'
 		print 'yes'
 		return True
 	print 'no'
@@ -207,6 +228,7 @@ def is_profile_complete(expa_id,gr_id,):
 def is_applicant(expa_id,gr_id):
 	url = 'https://gis-api.aiesec.org/v2/people/'+str(expa_id)+'.json?access_token='+expa_token
 	q = requests.get(url)
+	#print q.text
 	ep = json.loads(q.text)
 
 	if ep['status'] != 'open': 
@@ -218,7 +240,7 @@ def is_applicant(expa_id,gr_id):
 	 	   	]
 		}
 		test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-		print 'lo de si ya es palicante'
+		print 'ya es palicante'
 		
 
 		return True

@@ -37,19 +37,25 @@ def notify_new_opps(expa_token):
 	#map one opp per porgram 
 	backgrounds = open('backgrounds.json','r')
 	programs = json.loads(backgrounds.read())['data']
-	#IT
+	opps = {}
 	
-	#get_opps(expa_token,[224])
+	#getting opps from our country partners
 	peru = get_opps(expa_token,config.PERU)
-	#Teaching
 	colombia = get_opps(expa_token,config.COLOMBIA)
-	#Engineering
 	argentina = get_opps(expa_token,config.ARGENTINA)
-	#Marketing
 	costarica = get_opps(expa_token,config.COSTARICA)
-	#Business Administration
 	brasil = get_opps(expa_token,config.Brasil)
-	get_eps_gr_1(peru_op=peru,colombia_op=colombia,argentina_op=argentina,costarica_op=costarica,brasil_op=brasil)
+
+
+	url = 'https://gis-api.aiesec.org/v2/opportunities/'
+	#getting the full opps
+	opps['peru_op'] = json.loads(requests.get(url+str(peru)+'.json?access_token='+expa_token).text)
+	opps['colombia_op'] = json.loads(requests.get(url+str(colombia)+'.json?access_token='+expa_token).text)
+	opps['argentina_op'] = json.loads(requests.get(url+str(argentina)+'.json?access_token='+expa_token).text)
+	opps['costarica_op'] = json.loads(requests.get(url+str(costarica)+'.json?access_token='+expa_token).text)
+	opps['brasil_op'] = json.loads(requests.get(url+str(brasil)+'.json?access_token='+expa_token).text)
+
+	get_eps_gr_1(opps)
 	
 #this gets opportunities form te last week form expa using the yop token
 def get_opps(aiesec_token,country = config.PERU):
@@ -73,7 +79,7 @@ def get_opps(aiesec_token,country = config.PERU):
 
 
 #this method gets eps from get reponse to match them with the opps and then update their profiles
-def get_eps_gr_1(peru_op,colombia_op,argentina_op,costarica_op,brasil_op):
+def get_eps_gr_1(opps):
 	eps = None
 	#dates form today and 3 months ago
 	day = 3
@@ -109,34 +115,34 @@ def get_eps_gr_1(peru_op,colombia_op,argentina_op,costarica_op,brasil_op):
 			if 'aplicante' in custom_fields:
 				if custom_fields['aplicante'] != 'yes' :
 					#send the new opportunities to getresponse
-					send_opps(gr_id = ep['contactId'],peru=peru_op,colombia=colombia_op,argentina=argentina_op,costarica=costarica_op,brasil=brasil_op)
+					send_opps(gr_id = ep['contactId'],opps = opps)
 			elif not is_applicant(custom_fields['expa_id'],ep['contactId']):
-				send_opps(gr_id = ep['contactId'],peru=peru_op,colombia=colombia_op,argentina=argentina_op,costarica=costarica_op,brasil=brasil_op)
+				send_opps(gr_id = ep['contactId'],opps= opps)
 				
 		#
 		
 #
-def send_opps(gr_id , peru , colombia , argentina , costarica , brasil):
+def send_opps(gr_id , opps):
 	#get full ifor for the opps
-	url = 'https://gis-api.aiesec.org/v2/opportunities/'
-	peru_op = json.loads(requests.get(url+str(peru)+'.json?access_token='+expa_token).text)
-	colombia_op = json.loads(requests.get(url+str(colombia)+'.json?access_token='+expa_token).text)
-	argentina_op = json.loads(requests.get(url+str(argentina)+'.json?access_token='+expa_token).text)
-	costarica_op = json.loads(requests.get(url+str(costarica)+'.json?access_token='+expa_token).text)
-	brasil_op = json.loads(requests.get(url+str(brasil)+'.json?access_token='+expa_token).text)
+	peru_op = opps['peru_op']
+	colombia_op = opps['colombia_op']
+	argentina_op = opps['argentina_op']
+	costarica_op = opps['costarica_op']
+	brasil_op = opps['brasil_op'] 
+
 	#print costarica_op
 	params = {
     "customFieldValues": [
         	#http_op_costaricaineering
-        	{"customFieldId": 'zDY7G',"value": ['https://opportunities.aiesec.org/opportunity/'+str(costarica)]},
+        	{"customFieldId": 'zDY7G',"value": ['https://opportunities.aiesec.org/opportunity/'+str(costarica_op['id'])]},
         	#http_op_teahcing
-        	{"customFieldId": 'zDY7L',"value": ['https://opportunities.aiesec.org/opportunity/'+str(colombia)]},
+        	{"customFieldId": 'zDY7L',"value": ['https://opportunities.aiesec.org/opportunity/'+str(colombia_op['id'])]},
         	#http_op_ussines
-        	{"customFieldId": 'zDY7o',"value": ['https://opportunities.aiesec.org/opportunity/'+str(brasil)]},
+        	{"customFieldId": 'zDY7o',"value": ['https://opportunities.aiesec.org/opportunity/'+str(brasil_op['id'])]},
         	#http_op_argentina
-        	{"customFieldId": 'zDY74',"value": ['https://opportunities.aiesec.org/opportunity/'+str(argentina)]},
+        	{"customFieldId": 'zDY74',"value": ['https://opportunities.aiesec.org/opportunity/'+str(argentina_op['id'])]},
         	#http_op_it
-        	{"customFieldId": 'zDY72',"value": ['https://opportunities.aiesec.org/opportunity/'+str(peru)]},
+        	{"customFieldId": 'zDY72',"value": ['https://opportunities.aiesec.org/opportunity/'+str(peru_op['id'])]},
         	#titulo costarica
         	{"customFieldId": 'zDY7q',"value": [costarica_op['title']]},
         	#titulo colombia
@@ -182,7 +188,7 @@ def is_profile_complete(expa_id,gr_id,):
 	 	   	]
 		}
 		test  = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-		print 'lo del perfil completo'
+		print 'perfil completo'
 		print 'yes'
 		return True
 	print 'no'
