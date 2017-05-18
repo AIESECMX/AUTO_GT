@@ -84,7 +84,6 @@ def get_opps(aiesec_token,backgrounds):
 	'filters[programmes][]':[2],
 	'filters[backgrounds][][id]':backgrounds,
 	"filters[home_mcs][]":[1621,1606 ,1613,1549,1554],
-	#"filters[work_fields][]":[724,742],
 	"filters[created][to]" : datetime.date.today().strftime('%Y-%m-%d'),
 	"sort":"filters[created][to]"
 	}
