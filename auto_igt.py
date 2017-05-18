@@ -6,6 +6,7 @@ import urllib
 import urllib2
 import cookielib
 import logging
+import socket
 from ep import EP
 from opp import OP
 import sys
@@ -23,6 +24,7 @@ BA = 105
 #the get reponbse instace for us to work
 gr = GetResponse()
 token_genrator = GIS()
+ipAddress = getIP()
 expa_token = token_genrator.generate_token(config.user_mail,config.user_pass)
 yop_token = token_genrator.generate_op_token(config.user_mail,config.user_pass)
 yesterday = datetime.date.today()-datetime.timedelta(1)
@@ -89,7 +91,23 @@ def setCompatibleGR(ep,op):
 
 #TODO send the EP to GR
 def sendEPGR(ep):
-	
+	ep_gr = {
+	    "name": "Jan Kowalski",
+	    "email": "jan.kowalski@wp.pl",
+	    "dayOfCycle": "10",
+	    "campaign": {
+	        "campaignId": "jf7e3jn"
+	    },
+	    "customFieldValues": [
+	        {
+	            "customFieldId": "n",
+	            "value": [
+	                "white"
+	            ]
+	        }
+	    ],
+	    "ipAddress": str(ipAddress)
+		}	
 	return None 
 
 #this method tells if the ep background is in IT, eng, ....
@@ -142,7 +160,9 @@ def getOP(op_id ):
 #revisar el background del perifl y mandarlo a GR
 #pedir a nuevas oportunidades de mexico y enviarlas a gr
 
-
+#to get the IP adress
+def getIP():
+	return socket.gethostbyname(socket.gethostname())
 
 
 #the main method
@@ -150,11 +170,13 @@ def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
 	getApps()
+
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
 	#getEPSGR()
+
 
 
 # ejecucion 
