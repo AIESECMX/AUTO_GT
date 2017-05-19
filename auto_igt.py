@@ -24,7 +24,7 @@ BA = 105
 #the get reponbse instace for us to work
 gr = GetResponse()
 token_genrator = GIS()
-ipAddress = getIP()
+ipAddress = socket.gethostbyname(socket.gethostname())
 expa_token = token_genrator.generate_token(config.user_mail,config.user_pass)
 yop_token = token_genrator.generate_op_token(config.user_mail,config.user_pass)
 yesterday = datetime.date.today()-datetime.timedelta(1)
@@ -61,57 +61,79 @@ def getApps(page = 1):
 		
 		#getting the ep from expa
 		ep = getApplicant(app['opportunity']['id'],app['person']['id'])
-		#TODO send ep ep to get response
-		sendEPGR(ep)
-		ep_background = getEpBackground(ep)
-		op_background = getOpBackground(op)
-		#todo send background to GR
-		sendBackgroundGR(ep,ep_background)
-		sendOPsGR(ep,ep_background)
-		if  ep_background == op_background:
-			print 'ep:'+str(app['person']['id'])+' SIII es compatible con op: '+str(app['opportunity']['id'])
-			print 'ep:'+str(ep_background)+' op: '+str(op_background)
-			setCompatibleGR(ep,op)
-
+		sendEPGR(ep,op)
 	#cuantas paginas de applicaciones hay que pedir
 	#check if there are apps still to process
 	extra_pages = message['paging']['total_pages']
 	if page < extra_pages:
 		getApps(page = page+1)
 
+
 #this method will send opportunities to GR based on the background of the ep
 def sendOPsGR(ep,ep_background):
 	#todo
+
 	return None
 
-#this method sets the eo with a compatible flag and with the contacts in GR
-def setCompatibleGR(ep,op):
-	#TODO send to get response the field 
-	return None
+
+
 
 #TODO send the EP to GR
-def sendEPGR(ep):
+def sendEPGR(ep,op):
+	#TODO send ep ep to get response
+	ep_background = getEpBackground(ep)
+	op_background = getOpBackground(op)
+	#business_administration, engineering, information_technology, marketing, teaching
+	b = 'business_administration'
+	if ep_background == IT:
+		b = 'information_technology'
+	elif ep_background == MKT:
+		b = 'marketing'
+	elif ep_background == TEACH:
+		b = 'teaching'
+	elif ep_background == ENG:
+		b = 'engineering'
+	elif ep_background == BA:
+		b = 'business_administration'
+
+	#compatible
+	comp = 'no'
+	if  ep_background == op_background:
+		comp = 'si'
+
 	ep_gr = {
-	    "name": "Jan Kowalski",
-	    "email": "jan.kowalski@wp.pl",
-	    "dayOfCycle": "10",
+	    "name": ep['full_name'],
+	    "email": ep['email'],
+	    "dayOfCycle": "0",
 	    "campaign": {
-	        "campaignId": "jf7e3jn"
+	        "campaignId": config.igt_gr_campaign_id
 	    },
 	    "customFieldValues": [
 	        {
-	            "customFieldId": "n",
+	            "customFieldId": 'zU3vv', #expa id
 	            "value": [
-	                "white"
+	                ep['id']
+	            ]
+	        },
+	        {
+	            "customFieldId": 'zDYzj',#background_igt
+	            "value": [
+	                b
+	            ]
+	        },
+	        {
+	            "customFieldId": 'zDYTS',#background_check
+	            "value": [
+	                comp
 	            ]
 	        }
 	    ],
 	    "ipAddress": str(ipAddress)
-		}	
-	return None 
+		}
+	gr.post_requests('/contacts',data=ep_gr)
 
 #this method tells if the ep background is in IT, eng, ....
-def getEpBackgroundGR(ep):
+def getEpBackground(ep):
 	if 'backgrounds' in ep['profile']:
 		if len(ep['profile']['backgrounds']) == 0:
 			return TEACH
@@ -160,9 +182,8 @@ def getOP(op_id ):
 #revisar el background del perifl y mandarlo a GR
 #pedir a nuevas oportunidades de mexico y enviarlas a gr
 
-#to get the IP adress
-def getIP():
-	return socket.gethostbyname(socket.gethostname())
+#this mathod gets the eps from gr  and gets the newest opps forom expa 
+def getEPSGR():
 
 
 #the main method
@@ -170,12 +191,12 @@ def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
 	getApps()
-
+	#print  gr.get_request('custom-fields')
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
-	#getEPSGR()
+	getEPSGR()
 
 
 

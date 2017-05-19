@@ -24,5 +24,6 @@ class GetResponse(object):
 		headers_aux = self.headers
 		headers_aux['Content-Type'] = 'application/json'
 		q = requests.post(self.url+url, headers=headers_aux,data=json.dumps(data))
+		return q.text
 		
 
