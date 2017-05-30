@@ -13,14 +13,6 @@ import sys
 sys.path.append("../")
 from gis_token_generator import GIS
 from get_response import GetResponse
-#CONFIG VARS start
-#CONFIG VARS start
-#names for profiles
-IT = 101
-ENG = 102
-TEACH = 103
-MKT = 104
-BA = 105
 #the get reponbse instace for us to work
 gr = GetResponse()
 token_genrator = GIS()
@@ -34,7 +26,7 @@ headers = {'access_token': expa_token,
 	'page':1,
 	'filters[status]':'open',
 	'filters[opportunity_committee]':config.MEXICO, # solo las de mexico 
-	'filters[programmes][]':2 # solo para gt
+	'filters[programmes][]':[1] # solo para gv
 	}
 
 #the backgrounds per profile
@@ -289,7 +281,7 @@ def getOpportunities(background):
 	yesterday = datetime.date.today()-datetime.timedelta(14)
 	params = {
 	"access_token" :expa_token,
-	'filters[programmes][]':[2],
+	'filters[programmes][]':[1],#igv
 	'filters[backgrounds][][id]':backs,
 	'filters[status]':'open',
 	"filters[home_mcs][]":[1589],
