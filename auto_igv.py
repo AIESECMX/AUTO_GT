@@ -76,10 +76,6 @@ def getApps(page = 1):
 def sendEPGR(ep,op):
 	ep_background = getEpBackground(ep)
 	op_background = getOpBackground(op)
-	print 'ANTES DE MANDAR A GR'
-	print 'ANTES DE MANDAR A GR'
-	print 'ANTES DE MANDAR A GR'
-	print op
 	#business_administration, engineering, information_technology, marketing, teaching
 	b = 'business_administration'
 	if ep_background == IT:
@@ -92,19 +88,11 @@ def sendEPGR(ep,op):
 		b = 'engineering'
 	elif ep_background == BA:
 		b = 'business_administration'
+
 	#compatible
 	comp = 'no'
-	op_man_1 = ''
-	op_man_2 = ''
-	op_man__mail_1 = ''
-	op_man__mail_2 = ''
-	#if the EP is a match for the op we get the ocntact info
 	if  ep_background == op_background:
-		comp = 'yes'
-		op_man_1 = op['managers'][0]['full_name']
-		#op_man_2 = ''
-		op_man__mail_1 = op_man_1 = op['managers'][0]['email']
-		#op_man__mail_2 = ''
+		comp = 'si'
 
 	ep_gr = {
 	    "name": ep['full_name'],
@@ -131,76 +119,11 @@ def sendEPGR(ep,op):
 	            "value": [
 	                comp
 	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYz3',#manager 1 name
-	            "value": [
-	                op_man_1
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYTY',#manager 1 mail
-	            "value": [
-	                op_man__mail_1
-	            ]
 	        }
-	        #,{
-	        #    "customFieldId": 'zDYTY',#manager 2 name
-	        #    "value": [
-	        #        comp
-	        #    ]
-	        #},
-	        #{
-	        #    "customFieldId": 'zDYTF',#manager 2 mail
-	        #    "value": [
-	        #        comp
-	        #    ]
-	        #}
 	    ],
 	    "ipAddress": str(ipAddress)
 		}
-	r = gr.post_requests('/contacts',data=ep_gr)
-	if 'message' in r:
-		params = {
-		'query[campaignId]':config.igt_gr_campaign_id,
-		'query[email]':ep['email'],
-		'fields':''
-		}
-		query = 'contacts'
-		contacts  = gr.get_request(query,params = params)
-		l = json.loads(contacts)
-		gr_id = ''
-		for ep in l :
-			gr_id =  ep['contactId']
-		#this means that this is a new aplication for some ep that is already in get reponse and we will send
-		#the contacst of their new possible match
-		if gr_id != '' and comp == 'yes':
-			#print eng_op
-			params = {
-		    "customFieldValues": [
-			        {
-			            "customFieldId": 'zDYTS',#background_check
-			            "value": [
-			                comp
-			            ]
-			        },
-			        {
-			            "customFieldId": 'zDYz3',#manager 1 name
-			            "value": [
-			                op_man_1
-			            ]
-			        },
-			        {
-			            "customFieldId": 'zDYTY',#manager 1 mail
-			            "value": [
-			                op_man__mail_1
-			            ]
-			        }
-		 	   	]
-			}
-			gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-
-
+	gr.post_requests('/contacts',data=ep_gr)
 
 #this method tells if the ep background is in IT, eng, ....
 def getEpBackground(ep):
@@ -335,7 +258,7 @@ def send_opps(gr_id,opps):
         	#descripcion_igt_2
         	{"customFieldId": 'zDYTq',"value": [opps[1]['description'][:250]]},
         	#opp_ciudad_1
-        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]},
+        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]}
         	#opp_ciudad_2
         	{"customFieldId": 'zDYTi',"value": [opps[1]['teach_country']]},
         	#notify there are new apps
@@ -410,19 +333,17 @@ def is_accepted(expa_id,gr_id):
 	return False
 
 
-
 #the main method
 def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
-	getApps()
+	#getApps()
 	#print  gr.get_request('custom-fields')
-	#testduplicados()
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
-	#getEPSGR()
+	getEPSGR()
 	#getOpportunities(IT)
 
 

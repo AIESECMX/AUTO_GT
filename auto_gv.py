@@ -233,20 +233,20 @@ def is_profile_complete(expa_id,gr_id,):
 	q = requests.get(url)
 	#print q.status_code
 	ep = json.loads(q.text)
+	if 'missing_profile_fields' in ep:
+		if len(ep['missing_profile_fields']) == 0:
+			#set profile complete as true
+			params = {
+		    "customFieldValues": [
 
-	if len(ep['missing_profile_fields']) == 0:
-		#set profile complete as true
-		params = {
-	    "customFieldValues": [
-
-	        	
-	        	{"customFieldId": 'zDY1V',"value": ['yes']}
-	 	   	]
-		}
-		test  = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-		print 'perfil completo'
-		print 'yes'
-		return True
+		        	
+		        	{"customFieldId": 'zDY1V',"value": ['yes']}
+		 	   	]
+			}
+			test  = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
+			print 'perfil completo'
+			print 'yes'
+			return True
 	print 'no'
 	return False
 		

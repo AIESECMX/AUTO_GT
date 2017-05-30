@@ -206,20 +206,20 @@ def is_profile_complete(expa_id,gr_id,):
 	url = 'https://gis-api.aiesec.org/v2/people/'+str(expa_id)+'.json?access_token='+expa_token
 	q = requests.get(url)
 	ep = json.loads(q.text)
+	if 'missing_profile_fields' in ep:
+		if len(ep['missing_profile_fields']) == 0:
+			#set profile complete as true
+			params = {
+		    "customFieldValues": [
 
-	if len(ep['missing_profile_fields']) == 0:
-		#set profile complete as true
-		params = {
-	    "customFieldValues": [
-
-	        	
-	        	{"customFieldId": 'zDY1V',"value": ['yes']}
-	 	   	]
-		}
-		test  = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-		print 'perfil completo'
-		print 'yes'
-		return True
+		        	
+		        	{"customFieldId": 'zDY1V',"value": ['yes']}
+		 	   	]
+			}
+			test  = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
+			print 'perfil completo'
+			print 'yes'
+			return True
 	print 'no'
 	return False
 		
@@ -249,8 +249,8 @@ def is_applicant(expa_id,gr_id):
 #	the main method	
 def main():
 	#this methos starts the full excecution of autogt
-	#notify_new_opps(yop_token)
-	print  gr.get_request('custom-fields?perPage=200')
+	notify_new_opps(yop_token)
+	#print  gr.get_request('custom-fields?perPage=200')
 	
 
 
