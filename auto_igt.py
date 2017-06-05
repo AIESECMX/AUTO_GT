@@ -111,7 +111,7 @@ def sendEPGR(ep,op):
 	    },
 	    "customFieldValues": [
 	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
-	        {"customFieldId": 'zDYzj',"value": [b]},
+	        {"customFieldId": 'zDYzj',"value": [b]}, # background 
 	        {"customFieldId": 'zDYTS',"value": [comp]},#background_check
 			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
@@ -121,8 +121,9 @@ def sendEPGR(ep,op):
 	    "ipAddress": str(ipAddress)
 		}
 	r = gr.post_requests('/contacts',data=ep_gr)
-	print 'ep subido '+str(ep['id'])
-	print r
+	#uncoment to see the id of the updated EPs
+	#print 'ep subido '+str(ep['id'])
+	#this means the was already in expa and we needed to just update their profile 
 	if 'message' in r:
 		params = {
 		'query[campaignId]':config.igt_gr_campaign_id,
@@ -369,15 +370,13 @@ def is_accepted(expa_id,gr_id):
 def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
-	#getApps()
+	getApps()
 	#print  gr.get_request('custom-fields')
-	#testduplicados()
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
 	getEPSGR()
-	#getOpportunities(IT)
 
 
 

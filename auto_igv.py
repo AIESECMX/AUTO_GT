@@ -29,10 +29,7 @@ headers = {'access_token': expa_token,
 	'filters[programmes][]':[1] # solo para gv
 	}
 
-#the backgrounds per profile
-backs = open('backgrounds.json','r')
-backgrounds = json.loads(backs.read())['data']
-#nurturing para ICX
+#nurturing para ICV
 #checar las nuevas apps que haya con correos que no esten repetidos
 
 #when there are multiple pages this method wil 
@@ -66,25 +63,6 @@ def getApps(page = 1):
 
 #sending eps to gr
 def sendEPGR(ep,op):
-	ep_background = getEpBackground(ep)
-	op_background = getOpBackground(op)
-	#business_administration, engineering, information_technology, marketing, teaching
-	b = 'business_administration'
-	if ep_background == IT:
-		b = 'information_technology'
-	elif ep_background == MKT:
-		b = 'marketing'
-	elif ep_background == TEACH:
-		b = 'teaching'
-	elif ep_background == ENG:
-		b = 'engineering'
-	elif ep_background == BA:
-		b = 'business_administration'
-
-	#compatible
-	comp = 'no'
-	if  ep_background == op_background:
-		comp = 'si'
 
 	ep_gr = {
 	    "name": ep['full_name'],
@@ -94,60 +72,43 @@ def sendEPGR(ep,op):
 	        "campaignId": config.igt_gr_campaign_id
 	    },
 	    "customFieldValues": [
-	        {
-	            "customFieldId": 'zU3vv', #expa id
-	            "value": [
-	                ep['id']
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYzj',#background_igt
-	            "value": [
-	                b
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYTS',#background_check
-	            "value": [
-	                comp
-	            ]
-	        }
+	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
+	        {"customFieldId": 'zDYTS',"value": [comp]},#to check if there are new contacts to send
+			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
+	        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+	        {"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
 	    ],
 	    "ipAddress": str(ipAddress)
 		}
-	gr.post_requests('/contacts',data=ep_gr)
-
-#this method tells if the ep background is in IT, eng, ....
-def getEpBackground(ep):
-	if 'backgrounds' in ep['profile']:
-		if len(ep['profile']['backgrounds']) == 0:
-			return TEACH
-
-	if ep['profile']['backgrounds'][0]['id'] in backgrounds['IT']:
-		return IT
-	if ep['profile']['backgrounds'][0]['id'] in backgrounds['Engineering']:
-		return ENG
-	if ep['profile']['backgrounds'][0]['id'] in backgrounds['Marketing']:
-		return MKT
-	if ep['profile']['backgrounds'][0]['id'] in backgrounds['Business Administration']:
-		return BA
-	return TEACH 
-
-#this method tells if the ep background is in IT, eng, ....
-def getOpBackground(op):
-	if 'backgrounds' in op: 
-		if len(op['backgrounds']) == 0:
-			return TEACH
-
-	if op['backgrounds'][0]['id'] in backgrounds['IT']:
-		return IT
-	if op['backgrounds'][0]['id'] in backgrounds['Engineering']:
-		return ENG
-	if op['backgrounds'][0]['id'] in backgrounds['Marketing']:
-		return MKT
-	if op['backgrounds'][0]['id'] in backgrounds['Business Administration']:
-		return BA
-	return TEACH
+	r = gr.post_requests('/contacts',data=ep_gr)
+	#this means that the Ep was already in GR and we are just sending the contacts of tthe new application 
+	if 'message' in r:
+		params = {
+		'query[campaignId]':config.igv_gr_campaign_id,
+		'query[email]':ep['email'],
+		'fields':''
+		}
+		query = 'contacts'
+		contacts  = gr.get_request(query,params = params)
+		l = json.loads(contacts)
+		gr_id = ''
+		for ep in l :
+			gr_id =  ep['contactId']
+		#this means that this is a new aplication for some ep that is already in get reponse and we will send
+		#the contacst of their new possible match
+		if gr_id != '' :
+			#print eng_op
+			params = {
+		    "customFieldValues": [
+			        {"customFieldId": 'zDYTS',"value": ['yes']},#background_check
+					{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+			        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
+			        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+	        		{"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
+		 	   	]
+			}
+			gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
 
 #gets an ep form exa with their id
 def getApplicant(op_id,ep_id ):
@@ -169,16 +130,12 @@ def getOP(op_id ):
 
 #this mathod gets the eps from gr  and gets the newest opps forom expa for a profile
 def getEPSGR():
-	#todo get the opportunities from EXPA
-	ops_it = getOpportunities(IT)
-	ops_teach = getOpportunities(TEACH)
-	ops_eng = getOpportunities(ENG)
-	ops_mkt = getOpportunities(MKT)
-	ops_ba = getOpportunities(BA)
+	#TODO get the opportunities from EXPA
+
 	eps = None
-	#dates form today and 3 months ago
+	#dates form today and 2 months ago
 	day = 0
-	while day < 90 :
+	while day < 60 :
 		#just egtting the eps in days 7*times to reduce requests
 		created  = datetime.date.today()
 		day += 7
@@ -202,38 +159,17 @@ def getEPSGR():
 			for cf in  ep_aux['customFieldValues']:
 				custom_fields[cf['name']] = cf['value'][0]
 						#check if the ep has a complete profile
-			#check oportunitites and if there are actually new opportunities to send, 
+			#TODO check oportunitites and if there are actually new opportunities to send, 
 			#send to GR and update the flag
-			if 'background_igt' in custom_fields:
-				if ((custom_fields['background_igt'] == 'business_administration' and ops_ba == None)  or
-					(custom_fields['background_igt'] == 'engineering' and ops_eng== None) or
-					(custom_fields['background_igt'] == 'information_technology' and ops_it== None) or
-					(custom_fields['background_igt'] == 'marketing' and ops_mkt== None) or 
-					(custom_fields['background_igt'] == 'teaching' and ops_teach== None) ):
-					continue
 			if not is_accepted(custom_fields['expa_id'],ep['contactId']):
-				print 'se supone que vamos a mandar '
+				print 'sendint ep id'
 				print ep
-				if custom_fields['background_igt'] == 'business_administration'  :
-					print 'mandando : ba'
-					send_opps(gr_id = ep['contactId'],opps =  ops_ba)
-				elif custom_fields['background_igt'] == 'engineering' :
-					print 'mandando : eng'
-					send_opps(gr_id = ep['contactId'],opps =  ops_eng)
-				elif custom_fields['background_igt'] == 'information_technology' :
-					print 'mandando : it'
-					send_opps(gr_id = ep['contactId'],opps =  ops_it)
-				elif custom_fields['background_igt'] == 'marketing' :
-					print 'mandando : mkt'
-					send_opps(gr_id = ep['contactId'],opps =  ops_mkt)
-				elif custom_fields['background_igt'] == 'teaching': 
-					print 'mandando : teach'
-					send_opps(gr_id = ep['contactId'],opps =  ops_teach)
+				#TODO actually send opps
+				send_opps(gr_id = ep['contactId'],opps =  ops_teach)
 		#
 
 #this method sends the opps to GR for the specific user
 def send_opps(gr_id,opps):
-
 	#print eng_op
 	params = {
     "customFieldValues": [
@@ -260,21 +196,8 @@ def send_opps(gr_id,opps):
 	test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
 
 #this method get opps based on the background 
-def getOpportunities(background):
-	#map one opp per porgram 
-	backgrounds = open('backgrounds.json','r')
-	programs = json.loads(backgrounds.read())['data']
-	backs = []
-	if background == IT:
-		backs  = programs['IT']
-	elif background == MKT:
-		backs = programs['Marketing']
-	elif background == ENG:
-		backs = programs['Engineering']
-	elif background == BA:
-		backs = programs['Business Administration']
-	else:
-		backs = programs['Teaching']
+def getOpportunities(sdg):
+	# todo get new opps per sdg
 
 	#this gets opportunities form te last week form expa using the yop token
 	url = "https://gis-api.aiesec.org/v2/opportunities.json"
@@ -329,14 +252,14 @@ def is_accepted(expa_id,gr_id):
 def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
-	#getApps()
+	getApps()
 	#print  gr.get_request('custom-fields')
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
 	getEPSGR()
-	#getOpportunities(IT)
+	
 
 
 
