@@ -34,7 +34,7 @@ headers = {'access_token': expa_token,
 	'page':1,
 	'filters[status]':'open',
 	'filters[opportunity_committee]':config.MEXICO, # solo las de mexico 
-	'filters[programmes][]':2 # solo para gt
+	'filters[programmes][]':[2] # solo para gt
 	}
 
 #the backgrounds per profile
@@ -143,7 +143,10 @@ def sendEPGR(ep,op):
 	            "value": [
 	                op_man__mail_1
 	            ]
-	        }
+	        },
+	         #todo
+	        {"customFieldId": 'zDYTY',"value": [op['title']]},#op name
+	        {"customFieldId": 'zDYTY',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]},#op link
 	        #,{
 	        #    "customFieldId": 'zDYTY',#manager 2 name
 	        #    "value": [
@@ -178,24 +181,12 @@ def sendEPGR(ep,op):
 			#print eng_op
 			params = {
 		    "customFieldValues": [
-			        {
-			            "customFieldId": 'zDYTS',#background_check
-			            "value": [
-			                comp
-			            ]
-			        },
-			        {
-			            "customFieldId": 'zDYz3',#manager 1 name
-			            "value": [
-			                op_man_1
-			            ]
-			        },
-			        {
-			            "customFieldId": 'zDYTY',#manager 1 mail
-			            "value": [
-			                op_man__mail_1
-			            ]
-			        }
+			        {"customFieldId": 'zDYTS',"value": [comp]},#background_check
+			        {"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+			        {"customFieldId": 'zDYTY',"value": [op_man__mail_1]},#manager 1 mail
+			        #todo
+			        {"customFieldId": 'zDYTY',"value": [op['title']]},#op name
+			        {"customFieldId": 'zDYTY',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]},#op link
 		 	   	]
 			}
 			gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)

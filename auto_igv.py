@@ -14,13 +14,7 @@ sys.path.append("../")
 from gis_token_generator import GIS
 from get_response import GetResponse
 #CONFIG VARS start
-#CONFIG VARS start
-#names for profiles
-IT = 101
-ENG = 102
-TEACH = 103
-MKT = 104
-BA = 105
+
 #the get reponbse instace for us to work
 gr = GetResponse()
 token_genrator = GIS()
@@ -34,12 +28,9 @@ headers = {'access_token': expa_token,
 	'page':1,
 	'filters[status]':'open',
 	'filters[opportunity_committee]':config.MEXICO, # solo las de mexico 
-	'filters[programmes][]':2 # solo para gt
+	'filters[programmes][]':[1] # solo para gv
 	}
 
-#the backgrounds per profile
-backs = open('backgrounds.json','r')
-backgrounds = json.loads(backs.read())['data']
 #nurturing para ICX
 #checar las nuevas apps que haya con correos que no esten repetidos
 
@@ -64,6 +55,7 @@ def getApps(page = 1):
 		sendEPGR(ep,op)
 	#cuantas paginas de applicaciones hay que pedir
 	#check if there are apps still to process
+	#TODO
 	extra_pages = message['paging']['total_pages']
 	if page < extra_pages:
 		getApps(page = page+1)
@@ -74,56 +66,57 @@ def getApps(page = 1):
 
 #sending eps to gr
 def sendEPGR(ep,op):
-	ep_background = getEpBackground(ep)
-	op_background = getOpBackground(op)
-	#business_administration, engineering, information_technology, marketing, teaching
-	b = 'business_administration'
-	if ep_background == IT:
-		b = 'information_technology'
-	elif ep_background == MKT:
-		b = 'marketing'
-	elif ep_background == TEACH:
-		b = 'teaching'
-	elif ep_background == ENG:
-		b = 'engineering'
-	elif ep_background == BA:
-		b = 'business_administration'
-
-	#compatible
-	comp = 'no'
-	if  ep_background == op_background:
-		comp = 'si'
+	op_man_1 = op['managers'][0]['full_name']
+	op_man__mail_1 = op_man_1 = op['managers'][0]['email']
 
 	ep_gr = {
 	    "name": ep['full_name'],
 	    "email": ep['email'],
 	    "dayOfCycle": "0",
 	    "campaign": {
-	        "campaignId": config.igt_gr_campaign_id
+	        "campaignId": config.igv_gr_campaign_id
 	    },
 	    "customFieldValues": [
-	        {
-	            "customFieldId": 'zU3vv', #expa id
-	            "value": [
-	                ep['id']
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYzj',#background_igt
-	            "value": [
-	                b
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYTS',#background_check
-	            "value": [
-	                comp
-	            ]
-	        }
+	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
+	        {"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+	        {"customFieldId": 'zDYTY',"value": [op_man__mail_1]},#manager 1 mail
+	         #todo
+	        {"customFieldId": 'zDYTY',"value": [op['title']]},#op name
+	        {"customFieldId": 'zDYTY',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]},#op link
+
 	    ],
 	    "ipAddress": str(ipAddress)
 		}
-	gr.post_requests('/contacts',data=ep_gr)
+	r = gr.post_requests('/contacts',data=ep_gr)
+	if 'message' in r:
+		params = {
+		'query[campaignId]':config.igv_gr_campaign_id,
+		'query[email]':ep['email'],
+		'fields':''
+		}
+		query = 'contacts'
+		contacts  = gr.get_request(query,params = params)
+		l = json.loads(contacts)
+		gr_id = ''
+		for ep in l :
+			gr_id =  ep['contactId']
+		#this means that this is a new aplication for some ep that is already in get reponse and we will send
+		#the contacst of their new possible match
+		if gr_id != '' and comp == 'yes':
+			#print eng_op
+			params = {
+		    "customFieldValues": [
+			        {"customFieldId": 'zDYTS',"value": [comp]},#background_check
+			        {"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+			        {"customFieldId": 'zDYTY',"value": [op_man__mail_1]},#manager 1 mail
+			        #todo
+			        {"customFieldId": 'zDYTY',"value": [op['title']]},#op name
+			        {"customFieldId": 'zDYTY',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]},#op link
+		 	   	]
+			}
+			gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
+
+
 
 #this method tells if the ep background is in IT, eng, ....
 def getEpBackground(ep):
@@ -191,7 +184,7 @@ def getEPSGR():
 		created  = datetime.date.today()
 		day += 7
 		params = {
-		'query[campaignId]':config.igt_gr_campaign_id,
+		'query[campaignId]':config.igv_gr_campaign_id,
 		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
 		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
@@ -258,7 +251,7 @@ def send_opps(gr_id,opps):
         	#descripcion_igt_2
         	{"customFieldId": 'zDYTq',"value": [opps[1]['description'][:250]]},
         	#opp_ciudad_1
-        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]}
+        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]},
         	#opp_ciudad_2
         	{"customFieldId": 'zDYTi',"value": [opps[1]['teach_country']]},
         	#notify there are new apps
@@ -289,7 +282,7 @@ def getOpportunities(background):
 	yesterday = datetime.date.today()-datetime.timedelta(14)
 	params = {
 	"access_token" :expa_token,
-	'filters[programmes][]':[2],
+	'filters[programmes][]':[1],
 	'filters[backgrounds][][id]':backs,
 	'filters[status]':'open',
 	"filters[home_mcs][]":[1589],
@@ -333,17 +326,25 @@ def is_accepted(expa_id,gr_id):
 	return False
 
 
+
+###IGT
+###IGT
+
+
+
+
 #the main method
 def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
-	#getApps()
+	getApps()
 	#print  gr.get_request('custom-fields')
+	#testduplicados()
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
-	getEPSGR()
+	#getEPSGR()
 	#getOpportunities(IT)
 
 
