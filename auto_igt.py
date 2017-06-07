@@ -76,10 +76,6 @@ def getApps(page = 1):
 def sendEPGR(ep,op):
 	ep_background = getEpBackground(ep)
 	op_background = getOpBackground(op)
-	print 'ANTES DE MANDAR A GR'
-	print 'ANTES DE MANDAR A GR'
-	print 'ANTES DE MANDAR A GR'
-	print op
 	#business_administration, engineering, information_technology, marketing, teaching
 	b = 'business_administration'
 	if ep_background == IT:
@@ -94,16 +90,16 @@ def sendEPGR(ep,op):
 		b = 'business_administration'
 	#compatible
 	comp = 'no'
-	op_man_1 = ''
-	op_man_2 = ''
-	op_man__mail_1 = ''
+	op_man_1 = 'none'
+	op_man_2 = '-'
+	op_man__mail_1 = 'none'
 	op_man__mail_2 = ''
 	#if the EP is a match for the op we get the ocntact info
 	if  ep_background == op_background:
 		comp = 'yes'
 		op_man_1 = op['managers'][0]['full_name']
 		#op_man_2 = ''
-		op_man__mail_1 = op_man_1 = op['managers'][0]['email']
+		op_man__mail_1 =  op['managers'][0]['email']
 		#op_man__mail_2 = ''
 
 	ep_gr = {
@@ -114,55 +110,21 @@ def sendEPGR(ep,op):
 	        "campaignId": config.igt_gr_campaign_id
 	    },
 	    "customFieldValues": [
-	        {
-	            "customFieldId": 'zU3vv', #expa id
-	            "value": [
-	                ep['id']
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYzj',#background_igt
-	            "value": [
-	                b
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYTS',#background_check
-	            "value": [
-	                comp
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYz3',#manager 1 name
-	            "value": [
-	                op_man_1
-	            ]
-	        },
-	        {
-	            "customFieldId": 'zDYTY',#manager 1 mail
-	            "value": [
-	                op_man__mail_1
-	            ]
-	        },
-	         #todo
-	        {"customFieldId": 'zDYTY',"value": [op['title']]},#op name
-	        {"customFieldId": 'zDYTY',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]},#op link
-	        #,{
-	        #    "customFieldId": 'zDYTY',#manager 2 name
-	        #    "value": [
-	        #        comp
-	        #    ]
-	        #},
-	        #{
-	        #    "customFieldId": 'zDYTF',#manager 2 mail
-	        #    "value": [
-	        #        comp
-	        #    ]
-	        #}
+	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
+	        {"customFieldId": 'zDYzj',"value": [b]}, # background 
+	        {"customFieldId": 'zDYTS',"value": [comp]},#background_check
+			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
+	        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+	        {"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
+
 	    ],
 	    "ipAddress": str(ipAddress)
 		}
 	r = gr.post_requests('/contacts',data=ep_gr)
+	#uncoment to see the id of the updated EPs
+	#print 'ep subido '+str(ep['id'])
+	#this means the was already in expa and we needed to just update their profile 
 	if 'message' in r:
 		params = {
 		'query[campaignId]':config.igt_gr_campaign_id,
@@ -182,11 +144,10 @@ def sendEPGR(ep,op):
 			params = {
 		    "customFieldValues": [
 			        {"customFieldId": 'zDYTS',"value": [comp]},#background_check
-			        {"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
-			        {"customFieldId": 'zDYTY',"value": [op_man__mail_1]},#manager 1 mail
-			        #todo
-			        {"customFieldId": 'zDYTY',"value": [op['title']]},#op name
-			        {"customFieldId": 'zDYTY',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]},#op link
+					{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
+			        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
+			        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+	        		{"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
 		 	   	]
 			}
 			gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
@@ -328,12 +289,13 @@ def send_opps(gr_id,opps):
         	#opp_ciudad_1
         	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]},
         	#opp_ciudad_2
-        	{"customFieldId": 'zDYTi',"value": [opps[1]['teach_country']]},
+        	{"customFieldId": 'zDYTi',"value": [opps[1]['country']]},
         	#notify there are new apps
-        	{"customFieldId": 'zDYRL',"value": 'yes'}
+        	{"customFieldId": 'zDYRL',"value": ['yes']}
  	   	]
 	}
 	test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
+
 
 #this method get opps based on the background 
 def getOpportunities(background):
@@ -374,7 +336,10 @@ def getOpportunities(background):
 		a = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text)
 		a_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(a['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
 		a['country'] = a_c
-		ops = [a]
+		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
+		b_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(b['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
+		b['country'] = b_c
+		ops = [a,b]
 
 		return ops
 
@@ -408,13 +373,11 @@ def main():
 	#send the contact to those who match background with opps
 	getApps()
 	#print  gr.get_request('custom-fields')
-	#testduplicados()
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
-	#getEPSGR()
-	#getOpportunities(IT)
+	getEPSGR()
 
 
 
