@@ -286,9 +286,9 @@ def send_opps(gr_id,opps):
         	#descripcion_igt_2
         	{"customFieldId": 'zDYTq',"value": [opps[1]['description'][:250]]},
         	#opp_ciudad_1
-        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]},
+        	{"customFieldId": 'zDYTv',"value": [opps[0]['location']]},
         	#opp_ciudad_2
-        	{"customFieldId": 'zDYTi',"value": [opps[1]['country']]},
+        	{"customFieldId": 'zDYTi',"value": [opps[1]['location']]},
         	#notify there are new apps
         	{"customFieldId": 'zDYRL',"value": ['yes']}
  	   	]
@@ -333,11 +333,7 @@ def getOpportunities(background):
 		return None
 	else:
 		a = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text)
-		a_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(a['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-		a['country'] = a_c
 		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
-		b_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(b['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-		b['country'] = b_c
 		ops = [a,b]
 
 		return ops
