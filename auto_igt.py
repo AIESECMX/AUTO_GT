@@ -335,10 +335,10 @@ def getOpportunities(background):
 	else:
 		a = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text)
 		a_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(a['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-		a['country'] = a_c
+		a['location'] = a_c
 		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
 		b_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(b['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-		b['country'] = b_c
+		b['location'] = b_c
 		ops = [a,b]
 
 		return ops
