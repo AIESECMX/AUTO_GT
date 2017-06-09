@@ -189,7 +189,7 @@ def getEPSGR():
 	day = 0
 	while day < 60 :
 		#just egtting the eps in days 7*times to reduce requests
-		created  = datetime.date.today()
+		created  = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
 		'query[campaignId]':config.igv_gr_campaign_id,
