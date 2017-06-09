@@ -247,7 +247,7 @@ def is_applicant(expa_id,gr_id):
 #	the main method	
 def main():
 	#this methos starts the full excecution of autogt
-	notify_new_opps(yop_token)
+	#notify_new_opps(yop_token)
 	print  gr.get_request('custom-fields?perPage=300')
 	
 

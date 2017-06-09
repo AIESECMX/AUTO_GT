@@ -1462,6 +1462,20 @@
         "values": []
     },
     {
+        "customFieldId": "zDYdE",
+        "href": "https://api3.getresponse360.com/v3/custom-fields/zDYdE",
+        "name": "nueva_aplicacion",
+        "fieldType": "multi_select",
+        "format": "multi_select",
+        "valueType": "string",
+        "type": "multi_select",
+        "hidden": "true",
+        "values": [
+            "no",
+            "yes"
+        ]
+    },
+    {
         "customFieldId": "zU3kZ",
         "href": "https://api3.getresponse360.com/v3/custom-fields/zU3kZ",
         "name": "numero_telefonico",

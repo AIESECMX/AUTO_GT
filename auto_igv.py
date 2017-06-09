@@ -110,7 +110,8 @@ def sendEPGR(ep,op):
 	    "customFieldValues": [
 	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
 	        #todo check custom field for new app in ordedr to let know there are new contacts
-	        {"customFieldId": 'zDYTS',"value": ['yes']},#to check if there are new contacts to send
+	        
+			{"customFieldId": 'zDYdE',"value": ['yes']},#new app
 			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
 	        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
@@ -149,6 +150,7 @@ def sendEPGR(ep,op):
 					{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 			        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
 			        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+			        {"customFieldId": 'zDYdE',"value": ['yes']},#new app
 			        {"customFieldId": 'zDYdh',"value": [sdg]},#sdg applied
 	        		{"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
 		 	   	]
