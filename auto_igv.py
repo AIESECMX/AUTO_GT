@@ -34,12 +34,18 @@ headers = {'access_token': expa_token,
 
 #SDGs
 EDU = "education"
-GEN_EQ = "gender_eq"
-WORK = "decent_work"
+HEALTH = "health"
 INEQU = "inequalities"
 CLIMATE = "climate"
 PARTNER = "partnerships"
 
+sdgs_igv = {
+		'health':1103,
+		'education':1104,
+		'inequalities':1110,
+		'climate':1113,
+		'partnerships':1117
+}
 
 #nurturing para IGV
 #checar las nuevas apps que haya con correos que no esten repetidos
@@ -103,6 +109,7 @@ def sendEPGR(ep,op):
 	    },
 	    "customFieldValues": [
 	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
+	        #todo check custom field for new app in ordedr to let know there are new contacts
 	        {"customFieldId": 'zDYTS',"value": ['yes']},#to check if there are new contacts to send
 			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
@@ -169,10 +176,11 @@ def getOP(op_id ):
 #this mathod gets the eps from gr  and gets the newest opps forom expa for a profile
 def getEPSGR():
 
+
+
 	#Getting the opportunities by SGD form expa
 	ops_edu = getOpportunities(EDU)
-	ops_gend = getOpportunities(GEN_EQ)
-	ops_work = getOpportunities(WORK)
+	ops_health = getOpportunities(HEALTH)
 	ops_ineq = getOpportunities(INEQU)
 	ops_climate = getOpportunities(CLIMATE)
 	ops_part = getOpportunities(PARTNER)
@@ -207,8 +215,7 @@ def getEPSGR():
 			#send to GR and update the flag
 			if 'sdg_check' in custom_fields:
 				if ((custom_fields['sdg_check'] == 'sdg4' and ops_edu == None)  or
-					(custom_fields['sdg_check'] == 'sdg5' and ops_gend== None) or
-					(custom_fields['sdg_check'] == 'sdg8' and ops_work== None) or
+					(custom_fields['sdg_check'] == 'sdg3' and ops_health== None) or
 					(custom_fields['sdg_check'] == 'sdg10' and ops_ineq== None) or
 					(custom_fields['sdg_check'] == 'sdg17' and ops_part== None) or 
 					(custom_fields['sdg_check'] == 'sdg13' and ops_climate== None) ):
@@ -216,10 +223,8 @@ def getEPSGR():
 			if not is_accepted(custom_fields['expa_id'],ep['contactId']):
 				if custom_fields['sdg_check'] == 'sdg4' :
 					send_opps(gr_id = ep['contactId'],opps =  ops_edu)
-				elif custom_fields['sdg_check'] == 'sdg5' :
-					send_opps(gr_id = ep['contactId'],opps =  ops_gend)
-				elif custom_fields['sdg_check'] == 'sdg8' :
-					send_opps(gr_id = ep['contactId'],opps =  ops_work)
+				elif custom_fields['sdg_check'] == 'sdg3' :
+					send_opps(gr_id = ep['contactId'],opps =  ops_health)
 				elif custom_fields['sdg_check'] == 'sdg10' :
 					send_opps(gr_id = ep['contactId'],opps =  ops_ineq)
 				elif custom_fields['sdg_check'] == 'sdg17': 
