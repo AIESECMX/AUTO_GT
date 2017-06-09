@@ -34,7 +34,7 @@ headers = {'access_token': expa_token,
 	'page':1,
 	'filters[status]':'open',
 	'filters[opportunity_committee]':config.MEXICO, # solo las de mexico 
-	'filters[programmes][]':[2] # solo para gt
+	'filters[programmes][]':[5] # solo para ge
 	}
 
 #the backgrounds per profile
@@ -107,7 +107,7 @@ def sendEPGR(ep,op):
 	    "email": ep['email'],
 	    "dayOfCycle": "0",
 	    "campaign": {
-	        "campaignId": config.igt_gr_campaign_id
+	        "campaignId": config.ige_gr_campaign_id
 	    },
 	    "customFieldValues": [
 	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
@@ -127,7 +127,7 @@ def sendEPGR(ep,op):
 	#this means the was already in expa and we needed to just update their profile 
 	if 'message' in r:
 		params = {
-		'query[campaignId]':config.igt_gr_campaign_id,
+		'query[campaignId]':config.ige_gr_campaign_id,
 		'query[email]':ep['email'],
 		'fields':''
 		}
@@ -220,7 +220,7 @@ def getEPSGR():
 		created  = datetime.date.today()
 		day += 7
 		params = {
-		'query[campaignId]':config.igt_gr_campaign_id,
+		'query[campaignId]':config.ige_gr_campaign_id,
 		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
 		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
@@ -287,9 +287,9 @@ def send_opps(gr_id,opps):
         	#descripcion_igt_2
         	{"customFieldId": 'zDYTq',"value": [opps[1]['description'][:250]]},
         	#opp_ciudad_1
-        	{"customFieldId": 'zDYTv',"value": [opps[0]['location']]},
+        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]},
         	#opp_ciudad_2
-        	{"customFieldId": 'zDYTi',"value": [opps[1]['location']]},
+        	{"customFieldId": 'zDYTi',"value": [opps[1]['country']]},
         	#notify there are new apps
         	{"customFieldId": 'zDYRL',"value": ['yes']}
  	   	]
@@ -319,7 +319,7 @@ def getOpportunities(background):
 	yesterday = datetime.date.today()-datetime.timedelta(14)
 	params = {
 	"access_token" :expa_token,
-	'filters[programmes][]':[2],
+	'filters[programmes][]':[5],#ige
 	'filters[backgrounds][][id]':backs,
 	'filters[status]':'open',
 	"filters[home_mcs][]":[1589],
@@ -334,15 +334,11 @@ def getOpportunities(background):
 		return None
 	else:
 		a = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text)
-<<<<<<< HEAD
-		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
-=======
 		a_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(a['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
 		a['location'] = a_c
 		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
 		b_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(b['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
 		b['location'] = b_c
->>>>>>> 30242c21663d5895b9baf9c53b1902f6224254f0
 		ops = [a,b]
 
 		return ops

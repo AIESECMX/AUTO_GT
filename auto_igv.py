@@ -13,6 +13,7 @@ import sys
 sys.path.append("../")
 from gis_token_generator import GIS
 from get_response import GetResponse
+
 #the get reponbse instace for us to work
 gr = GetResponse()
 token_genrator = GIS()
@@ -29,7 +30,18 @@ headers = {'access_token': expa_token,
 	'filters[programmes][]':[1] # solo para gv
 	}
 
-#nurturing para ICV
+#SDGS
+
+#SDGs
+EDU = "education"
+GEN_EQ = "gender_eq"
+WORK = "decent_work"
+INEQU = "inequalities"
+CLIMATE = "climate"
+PARTNER = "partnerships"
+
+
+#nurturing para IGV
 #checar las nuevas apps que haya con correos que no esten repetidos
 
 #when there are multiple pages this method wil 
@@ -63,26 +75,50 @@ def getApps(page = 1):
 
 #sending eps to gr
 def sendEPGR(ep,op):
+	op_man_1 = op['managers'][0]['full_name']
+	op_man__mail_1 = op['managers'][0]['email']
+	sdg = 'sdg4'
+
+
+	if op['sdg_info'] != None:
+		if  op['sdg_info']['sdg_target']['goal_id'] == 1104:
+			sdg = 'sdg4'
+		elif  op['sdg_info']['sdg_target']['goal_id'] == 1105:
+			sdg = 'sdg5'
+		elif  op['sdg_info']['sdg_target']['goal_id'] == 1108:
+			sdg = 'sdg8'
+		elif  op['sdg_info']['sdg_target']['goal_id'] == 1110:
+			sdg = 'sdg10'
+		elif  op['sdg_info']['sdg_target']['goal_id'] == 1113:
+			sdg = 'sdg13'
+		elif  op['sdg_info']['sdg_target']['goal_id'] == 1117:
+			sdg = 'sdg17'
 
 	ep_gr = {
 	    "name": ep['full_name'],
 	    "email": ep['email'],
 	    "dayOfCycle": "0",
 	    "campaign": {
-	        "campaignId": config.igt_gr_campaign_id
+	        "campaignId": config.igv_gr_campaign_id
 	    },
 	    "customFieldValues": [
 	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
-	        {"customFieldId": 'zDYTS',"value": [comp]},#to check if there are new contacts to send
+	        {"customFieldId": 'zDYTS',"value": ['yes']},#to check if there are new contacts to send
 			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
 	        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+	        {"customFieldId": 'zDYdh',"value": [sdg]},#sdg applied
 	        {"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
+
 	    ],
 	    "ipAddress": str(ipAddress)
 		}
+	
 	r = gr.post_requests('/contacts',data=ep_gr)
+	print r
+
 	#this means that the Ep was already in GR and we are just sending the contacts of tthe new application 
+
 	if 'message' in r:
 		params = {
 		'query[campaignId]':config.igv_gr_campaign_id,
@@ -97,24 +133,26 @@ def sendEPGR(ep,op):
 			gr_id =  ep['contactId']
 		#this means that this is a new aplication for some ep that is already in get reponse and we will send
 		#the contacst of their new possible match
+
 		if gr_id != '' :
 			#print eng_op
 			params = {
 		    "customFieldValues": [
-			        {"customFieldId": 'zDYTS',"value": ['yes']},#background_check
+			        {"customFieldId": 'zDYTS',"value": ['yes']},#To check if there is new contact to send
 					{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 			        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
 			        {"customFieldId": 'zDYKE',"value": [op['title']]},#opp name
+			        {"customFieldId": 'zDYdh',"value": [sdg]},#sdg applied
 	        		{"customFieldId": 'zDYKz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(op['id'])]}#oppp link
 		 	   	]
 			}
 			gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
 
+
 #gets an ep form exa with their id
 def getApplicant(op_id,ep_id ):
 	#q = requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(op_id)+'.json?access_token='+expa_token)
-	q = requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(op_id)+'/applicant.json?person_id='+str(ep_id)+'&access_token='+expa_token)
-	ep = json.loads(q.text)
+	ep = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(op_id)+'/applicant.json?person_id='+str(ep_id)+'&access_token='+expa_token).text)
 	return ep
 
 #gets an op form exa with their id
@@ -130,17 +168,23 @@ def getOP(op_id ):
 
 #this mathod gets the eps from gr  and gets the newest opps forom expa for a profile
 def getEPSGR():
-	#TODO get the opportunities from EXPA
 
+	#Getting the opportunities by SGD form expa
+	ops_edu = getOpportunities(EDU)
+	ops_gend = getOpportunities(GEN_EQ)
+	ops_work = getOpportunities(WORK)
+	ops_ineq = getOpportunities(INEQU)
+	ops_climate = getOpportunities(CLIMATE)
+	ops_part = getOpportunities(PARTNER)
 	eps = None
 	#dates form today and 2 months ago
-	day = 0
+	day = 3
 	while day < 60 :
 		#just egtting the eps in days 7*times to reduce requests
-		created  = datetime.date.today()
+		created = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
-		'query[campaignId]':config.igt_gr_campaign_id,
+		'query[campaignId]':config.igv_gr_campaign_id,
 		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
 		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
@@ -158,14 +202,30 @@ def getEPSGR():
 			ep_aux =  json.loads(gr.get_request(query+'/'+ep['contactId']))
 			for cf in  ep_aux['customFieldValues']:
 				custom_fields[cf['name']] = cf['value'][0]
-						#check if the ep has a complete profile
-			#TODO check oportunitites and if there are actually new opportunities to send, 
+						
+			#check oportunitites and if there are actually new opportunities to send, 
 			#send to GR and update the flag
+			if 'sdg_check' in custom_fields:
+				if ((custom_fields['sdg_check'] == 'sdg4' and ops_edu == None)  or
+					(custom_fields['sdg_check'] == 'sdg5' and ops_gend== None) or
+					(custom_fields['sdg_check'] == 'sdg8' and ops_work== None) or
+					(custom_fields['sdg_check'] == 'sdg10' and ops_ineq== None) or
+					(custom_fields['sdg_check'] == 'sdg17' and ops_part== None) or 
+					(custom_fields['sdg_check'] == 'sdg13' and ops_climate== None) ):
+					continue
 			if not is_accepted(custom_fields['expa_id'],ep['contactId']):
-				print 'sendint ep id'
-				print ep
-				#TODO actually send opps
-				send_opps(gr_id = ep['contactId'],opps =  ops_teach)
+				if custom_fields['sdg_check'] == 'sdg4' :
+					send_opps(gr_id = ep['contactId'],opps =  ops_edu)
+				elif custom_fields['sdg_check'] == 'sdg5' :
+					send_opps(gr_id = ep['contactId'],opps =  ops_gend)
+				elif custom_fields['sdg_check'] == 'sdg8' :
+					send_opps(gr_id = ep['contactId'],opps =  ops_work)
+				elif custom_fields['sdg_check'] == 'sdg10' :
+					send_opps(gr_id = ep['contactId'],opps =  ops_ineq)
+				elif custom_fields['sdg_check'] == 'sdg17': 
+					send_opps(gr_id = ep['contactId'],opps =  ops_part)
+				elif custom_fields['sdg_check'] == 'sdg13': 
+					send_opps(gr_id = ep['contactId'],opps =  ops_climate)
 		#
 
 #this method sends the opps to GR for the specific user
@@ -173,22 +233,22 @@ def send_opps(gr_id,opps):
 	#print eng_op
 	params = {
     "customFieldValues": [
-        	#http_op_igt_1
-        	{"customFieldId": 'zDYTs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[0]['id'])]},
-        	#http_op_igt_2
-        	{"customFieldId": 'zDYT8',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[1]['id'])]},
-        	#titulo_igt_1
-        	{"customFieldId": 'zDYTa',"value": [opps[0]['title']]},
-        	#titulo_igt_2
-        	{"customFieldId": 'zDYTG',"value": [opps[1]['title']]},
-        	#descripcion_igt_1
-        	{"customFieldId": 'zDYT0',"value": [opps[0]['description'][:250]]},
-        	#descripcion_igt_2
-        	{"customFieldId": 'zDYTq',"value": [opps[1]['description'][:250]]},
+        	#http_op_igv_1
+        	{"customFieldId": 'zDYp7',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[0]['id'])]},
+        	#http_op_igv_2
+        	{"customFieldId": 'zDYpz',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[1]['id'])]},
+        	#titulo_igv_1
+        	{"customFieldId": 'zDYpd',"value": [opps[0]['title']]},
+        	#titulo_igv_2
+        	{"customFieldId": 'zDYpn',"value": [opps[1]['title']]},
+        	#descripcion_igv_1
+        	{"customFieldId": 'zDYpw',"value": [opps[0]['description'][:250]]},
+        	#descripcion_igv_2
+        	{"customFieldId": 'zDYpy',"value": [opps[1]['description'][:250]]},
         	#opp_ciudad_1
-        	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]}
+        	{"customFieldId": 'zDYTv',"value": [opps[0]['location']]},
         	#opp_ciudad_2
-        	{"customFieldId": 'zDYTi',"value": [opps[1]['teach_country']]},
+        	{"customFieldId": 'zDYTi',"value": [opps[1]['location']]},
         	#notify there are new apps
         	{"customFieldId": 'zDYRL',"value": 'yes'}
  	   	]
@@ -197,7 +257,6 @@ def send_opps(gr_id,opps):
 
 #this method get opps based on the background 
 def getOpportunities(sdg):
-	# todo get new opps per sdg
 
 	#this gets opportunities form te last week form expa using the yop token
 	url = "https://gis-api.aiesec.org/v2/opportunities.json"
@@ -205,25 +264,27 @@ def getOpportunities(sdg):
 	params = {
 	"access_token" :expa_token,
 	'filters[programmes][]':[1],#igv
-	'filters[backgrounds][][id]':backs,
+	#todo change this for sdgs
+	'filters[sdg_goals][]':[config.sdgs[sdg]],
 	'filters[status]':'open',
-	"filters[home_mcs][]":[1589],
-	"filters[created][from]" : yesterday.strftime('%Y-%m-%d'),
-	"sort":"created_at"
+	'filters[home_mcs][]':[1589],
+	'filters[created][from]' : yesterday.strftime('%Y-%m-%d'),
+	'sort':'created_at'
 	}
 	q = requests.get(url, params=params)
 	#print q.status_code
 	ops_expa= json.loads(q.text)['data']
 	
 	if len(ops_expa) < 2:
+		print 'no ops'
 		return None
 	else:
-		a = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text)
-		a_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(a['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
-		a['country'] = a_c
-		ops = [a]
-
-		return ops
+		a_r = requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text
+		a = json.loads(a_r)
+		b_r = requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text
+		b = json.loads(b_r)
+		return [a,b]
+		
 
 #check if an ep is already accepted		
 def is_accepted(expa_id,gr_id):
@@ -248,18 +309,27 @@ def is_accepted(expa_id,gr_id):
 	return False
 
 
+
+###IGT
+###IGT
+
+
+
+
 #the main method
 def main():
 	#get the new apps of the previous day and check their compatibilty, add new interested to the list and
 	#send the contact to those who match background with opps
 	getApps()
 	#print  gr.get_request('custom-fields')
+	#testduplicados()
 	#gets the eps from gr that are to be updated today,
 	#check if they are in accepted and if so take them out of the flow, else
 	#check for their backgrounds, get the 5 most recent opps
 	#and put their profiles in GR
 	getEPSGR()
 	
+
 
 
 
