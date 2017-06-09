@@ -34,14 +34,20 @@ headers = {'access_token': expa_token,
 
 #SDGs
 EDU = "education"
-GEN_EQ = "gender_eq"
-WORK = "decent_work"
+HEALTH = "health"
 INEQU = "inequalities"
 CLIMATE = "climate"
 PARTNER = "partnerships"
 
+sdgs_igv = {
+		'health':1103,
+		'education':1104,
+		'inequalities':1110,
+		'climate':1113,
+		'partnerships':1117
+}
 
-#nurturing para IGV
+#nurturing para ICV
 #checar las nuevas apps que haya con correos que no esten repetidos
 
 #when there are multiple pages this method wil 
@@ -77,7 +83,7 @@ def getApps(page = 1):
 def sendEPGR(ep,op):
 	op_man_1 = op['managers'][0]['full_name']
 	op_man__mail_1 = op['managers'][0]['email']
-	sdg = 'sdg4'
+	sdg = 'sdg10'
 
 
 	if op['sdg_info'] != None:
@@ -103,6 +109,7 @@ def sendEPGR(ep,op):
 	    },
 	    "customFieldValues": [
 	        {"customFieldId": 'zU3vv', "value": [ep['id']]},#expa id
+	        #todo check custom field for new app in ordedr to let know there are new contacts
 	        {"customFieldId": 'zDYTS',"value": ['yes']},#to check if there are new contacts to send
 			{"customFieldId": 'zDYz3',"value": [op_man_1]},#manager 1 name
 	        {"customFieldId": 'zDYTC',"value": [op_man__mail_1]},#manager 1 mail
@@ -169,19 +176,20 @@ def getOP(op_id ):
 #this mathod gets the eps from gr  and gets the newest opps forom expa for a profile
 def getEPSGR():
 
+
+
 	#Getting the opportunities by SGD form expa
 	ops_edu = getOpportunities(EDU)
-	ops_gend = getOpportunities(GEN_EQ)
-	ops_work = getOpportunities(WORK)
+	ops_health = getOpportunities(HEALTH)
 	ops_ineq = getOpportunities(INEQU)
 	ops_climate = getOpportunities(CLIMATE)
 	ops_part = getOpportunities(PARTNER)
 	eps = None
 	#dates form today and 2 months ago
-	day = 3
+	day = 0
 	while day < 60 :
 		#just egtting the eps in days 7*times to reduce requests
-		created = datetime.date.today()-datetime.timedelta(day)
+		created  = datetime.date.today()
 		day += 7
 		params = {
 		'query[campaignId]':config.igv_gr_campaign_id,
@@ -207,19 +215,16 @@ def getEPSGR():
 			#send to GR and update the flag
 			if 'sdg_check' in custom_fields:
 				if ((custom_fields['sdg_check'] == 'sdg4' and ops_edu == None)  or
-					(custom_fields['sdg_check'] == 'sdg5' and ops_gend== None) or
-					(custom_fields['sdg_check'] == 'sdg8' and ops_work== None) or
+					(custom_fields['sdg_check'] == 'sdg3' and ops_health== None) or
 					(custom_fields['sdg_check'] == 'sdg10' and ops_ineq== None) or
 					(custom_fields['sdg_check'] == 'sdg17' and ops_part== None) or 
 					(custom_fields['sdg_check'] == 'sdg13' and ops_climate== None) ):
 					continue
 			if not is_accepted(custom_fields['expa_id'],ep['contactId']):
-				if custom_fields['sdg_check'] == 'sdg4' :
+				if custom_fields['sdg_check'] == 'sdg4'  :
 					send_opps(gr_id = ep['contactId'],opps =  ops_edu)
-				elif custom_fields['sdg_check'] == 'sdg5' :
-					send_opps(gr_id = ep['contactId'],opps =  ops_gend)
-				elif custom_fields['sdg_check'] == 'sdg8' :
-					send_opps(gr_id = ep['contactId'],opps =  ops_work)
+				elif custom_fields['sdg_check'] == 'sdg3' :
+					send_opps(gr_id = ep['contactId'],opps =  ops_health)
 				elif custom_fields['sdg_check'] == 'sdg10' :
 					send_opps(gr_id = ep['contactId'],opps =  ops_ineq)
 				elif custom_fields['sdg_check'] == 'sdg17': 
@@ -229,7 +234,7 @@ def getEPSGR():
 		#
 
 #this method sends the opps to GR for the specific user
-def send_oppss(gr_id,opps):
+def send_opps(gr_id,opps):
 	#print eng_op
 	params = {
     "customFieldValues": [
@@ -280,11 +285,13 @@ def getOpportunities(sdg):
 		return None
 	else:
 		a_r = requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text
+		
 		a = json.loads(a_r)
 		b_r = requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text
 		b = json.loads(b_r)
-		return [a,b]
 		
+		#return [a,b]
+		return None
 
 #check if an ep is already accepted		
 def is_accepted(expa_id,gr_id):
@@ -335,4 +342,4 @@ def main():
 
 # ejecucion 
 if __name__ == "__main__":
-	main()
+main()
