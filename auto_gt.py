@@ -106,7 +106,7 @@ def get_eps_gr_1(opps, countries ):
 		created  = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
-		'query[campaignId]':'S1vv8',
+		'query[campaignId]':'S1vv8',#contacto inicial profesionmal
 		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
 		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
@@ -247,7 +247,7 @@ def is_applicant(expa_id,gr_id):
 #	the main method	
 def main():
 	#this methos starts the full excecution of autogt
-	#	notify_new_opps(yop_token)
+	notify_new_opps(yop_token)
 	print  gr.get_request('custom-fields?perPage=300')
 	
 

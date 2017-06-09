@@ -217,7 +217,7 @@ def getEPSGR():
 	day = 0
 	while day < 90 :
 		#just egtting the eps in days 7*times to reduce requests
-		created  = datetime.date.today()
+		created  = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
 		'query[campaignId]':config.ige_gr_campaign_id,
@@ -274,18 +274,18 @@ def send_opps(gr_id,opps):
 	#print eng_op
 	params = {
     "customFieldValues": [
-        	#http_op_igt_1
-        	{"customFieldId": 'zDYTs',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[0]['id'])]},
-        	#http_op_igt_2
-        	{"customFieldId": 'zDYT8',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[1]['id'])]},
-        	#titulo_igt_1
-        	{"customFieldId": 'zDYTa',"value": [opps[0]['title']]},
-        	#titulo_igt_2
-        	{"customFieldId": 'zDYTG',"value": [opps[1]['title']]},
-        	#descripcion_igt_1
-        	{"customFieldId": 'zDYT0',"value": [opps[0]['description'][:250]]},
-        	#descripcion_igt_2
-        	{"customFieldId": 'zDYTq',"value": [opps[1]['description'][:250]]},
+        	#http_op_ige_1
+        	{"customFieldId": 'zDYpc',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[0]['id'])]},
+        	#http_op_ige_2
+        	{"customFieldId": 'zDYpS',"value": ['https://opportunities.aiesec.org/opportunity/'+str(opps[1]['id'])]},
+        	#titulo_ige_1
+        	{"customFieldId": 'zDYpA',"value": [opps[0]['title']]},
+        	#titulo_ige_2
+        	{"customFieldId": 'zDYpr',"value": [opps[1]['title']]},
+        	#descripcion_ige_1
+        	{"customFieldId": 'zDYph',"value": [opps[0]['description'][:250]]},
+        	#descripcion_ige_2
+        	{"customFieldId": 'zDYpE',"value": [opps[1]['description'][:250]]},
         	#opp_ciudad_1
         	{"customFieldId": 'zDYTv',"value": [opps[0]['country']]},
         	#opp_ciudad_2
