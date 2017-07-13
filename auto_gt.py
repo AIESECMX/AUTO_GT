@@ -106,7 +106,7 @@ def get_eps_gr_1(opps, countries ):
 		created  = datetime.date.today()-datetime.timedelta(day)
 		day += 7
 		params = {
-		'query[campaignId]':'S1vv8',#contacto inicial profesionmal
+		'query[campaignId]':'S1vv8',
 		'query[createdOn][from]':created.strftime('%Y-%m-%d'),
 		'query[createdOn][to]':created.strftime('%Y-%m-%d'),
 		'fields':''
@@ -240,6 +240,8 @@ def is_applicant(expa_id,gr_id):
 		}
 		test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
 		print 'ya es palicante'
+		
+
 		return True
 	return False
 
@@ -247,11 +249,12 @@ def is_applicant(expa_id,gr_id):
 #	the main method	
 def main():
 	#this methos starts the full excecution of autogt
-	#notify_new_opps(yop_token)
-	print  gr.get_request('custom-fields?perPage=300')
+	notify_new_opps(yop_token)
+	#print  gr.get_request('custom-fields?perPage=200')
 	
 
 
 #
 if __name__ == "__main__":
 	main()
+

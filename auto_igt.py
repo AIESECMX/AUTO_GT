@@ -46,28 +46,31 @@ backgrounds = json.loads(backs.read())['data']
 #when there are multiple pages this method wil 
 #recieve the number of page to request and then it will process all the apps
 def getApps(page = 1):
-	print 'PAGE '+str(page)
-	headersx = headersS
+	headersx = headers
 	headersx['page']=page
 	h = {'Accept': 'application/json'}
 	r = requests.get("https://gis-api.aiesec.org/v2/applications", params=headersx,data = h)
-	#print r.text
+	print r.text
+	#
 	message = json.loads(r.text)
 	apps = message['data']
 	#here we have tocheck if the ep and the opp are background aligned
-	
 	for app in apps:
-		
 		op = getOP(app['opportunity']['id'])
-		
 		#getting the ep from expa
 		ep = getApplicant(app['opportunity']['id'],app['person']['id'])
+		print 'ep id:'+str(ep['id'])
+		print 'op id:'+str(op['id'])
 		sendEPGR(ep,op)
 	#cuantas paginas de applicaciones hay que pedir
 	#check if there are apps still to process
 	extra_pages = message['paging']['total_pages']
 	if page < extra_pages:
 		getApps(page = page+1)
+
+
+
+
 
 #sending eps to gr
 def sendEPGR(ep,op):
@@ -122,7 +125,7 @@ def sendEPGR(ep,op):
 	#uncoment to see the id of the updated EPs
 	#print 'ep subido '+str(ep['id'])
 	#this means the was already in expa and we needed to just update their profile 
-	if 'message' in r:
+	if r != None and 'message' in r:
 		params = {
 		'query[campaignId]':config.igt_gr_campaign_id,
 		'query[email]':ep['email'],
@@ -214,9 +217,7 @@ def getEPSGR():
 	day = 0
 	while day < 90 :
 		#just egtting the eps in days 7*times to reduce requests
-		#created  = datetime.date.today()
-		created  = datetime.date.today()-datetime.timedelta(day)
-
+		created  = datetime.date.today()
 		day += 7
 		params = {
 		'query[campaignId]':config.igt_gr_campaign_id,
