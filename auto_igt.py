@@ -46,7 +46,8 @@ backgrounds = json.loads(backs.read())['data']
 #when there are multiple pages this method wil 
 #recieve the number of page to request and then it will process all the apps
 def getApps(page = 1):
-	headersx = headers
+	print 'PAGE '+str(page)
+	headersx = headersS
 	headersx['page']=page
 	h = {'Accept': 'application/json'}
 	r = requests.get("https://gis-api.aiesec.org/v2/applications", params=headersx,data = h)
@@ -67,10 +68,6 @@ def getApps(page = 1):
 	extra_pages = message['paging']['total_pages']
 	if page < extra_pages:
 		getApps(page = page+1)
-
-
-
-
 
 #sending eps to gr
 def sendEPGR(ep,op):
@@ -336,15 +333,11 @@ def getOpportunities(background):
 		return None
 	else:
 		a = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[0]['id'])+'.json?access_token='+expa_token).text)
-<<<<<<< HEAD
-		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
-=======
 		a_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(a['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
 		a['location'] = a_c
 		b = json.loads(requests.get('https://gis-api.aiesec.org/v2/opportunities/'+str(ops_expa[1]['id'])+'.json?access_token='+expa_token).text)
 		b_c = json.loads(requests.get('https://gis-api.aiesec.org/v2/committees/'+str(b['home_lc']['id'])+'.json?access_token='+expa_token).text)['parent']['name']
 		b['location'] = b_c
->>>>>>> 30242c21663d5895b9baf9c53b1902f6224254f0
 		ops = [a,b]
 
 		return ops
