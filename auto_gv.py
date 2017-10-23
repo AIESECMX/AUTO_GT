@@ -265,7 +265,7 @@ def is_applicant(expa_id,gr_id):
 	 	   	]
 		}
 		test = gr.post_requests('/contacts/'+str(gr_id)+'/custom-fields',data=params)
-		print 'ya es palicante'
+		print 'ya es aplicante'
 		
 		return True
 	return False

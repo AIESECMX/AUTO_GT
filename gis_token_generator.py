@@ -48,7 +48,8 @@ class GIS:
             req = urllib2.Request(url)
             res = self.opener.open(req)
             soup3 = BeautifulSoup(res.read(),'html.parser')
-            desc = soup3.findAll('meta') 
+            desc = soup3.findAll('meta')
+            auxaux = res.info()
             auth_token = (desc[1]['content'].encode('utf-8'))
             login_data = urllib.urlencode({'user[email]': email, 'user[password]': password,'authenticity_token':auth_token,'commit':'Sign in'})
 
@@ -73,7 +74,7 @@ class GIS:
         succes = False
         attempts = 0
         #asking to be redirected to YOP intead of EXPA
-        url='https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Fopportunities.aiesec.org%2Fauth&response_type=code&client_id=e34d5daf8c89172f7fabccbae8378eb3cb524cffc774c57afe2011b90d2e77e5'
+        url='https://auth.aiesec.org/oauth/authorize?redirect_uri=https%3A%2F%2Faiesec.org%2Fauth&response_type=code&client_id=e34d5daf8c89172f7fabccbae8378eb3cb524cffc774c57afe2011b90d2e77e5'
         # create the request 
         req = urllib2.Request(url)
         #try 3 times
