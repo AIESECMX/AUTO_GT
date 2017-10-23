@@ -1,14 +1,6 @@
 config.py
-test.py
-playground.py
-config.pyc
-config.pyc
-ep.pyc
-get_response.pyc
-gis_token_generator.pyc
-opp.pyc
-out.txt
-names.csv
-test.csv
 auto_igv.py
 auto_ige.py
+*.pyc
+*.txt
+*.csv
